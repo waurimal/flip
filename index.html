@@ -9,63 +9,35 @@
     <style>
         body {
             font-family: 'Jua', sans-serif;
-            background-color: #f0fdf4; /* Light green background */
+            background-color: #f0fdf4;
             -webkit-tap-highlight-color: transparent;
         }
         
-        /* 3D Card Flip Styles */
-        .perspective {
-            perspective: 1000px;
-        }
+        .perspective { perspective: 1000px; }
         .transform-style-3d {
             transform-style: preserve-3d;
             transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
         }
-        .backface-hidden {
-            backface-visibility: hidden;
-        }
-        .rotate-y-180 {
-            transform: rotateY(180deg);
-        }
-        .card-front {
-            transform: rotateY(180deg); /* Text/Image side */
-        }
-        .card-back {
-            /* Cover side */
-        }
+        .backface-hidden { backface-visibility: hidden; }
+        .rotate-y-180 { transform: rotateY(180deg); }
+        .card-front { transform: rotateY(180deg); }
 
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #f1f1f1; 
-            border-radius: 10px;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #86efac; 
-            border-radius: 10px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #4ade80; 
-        }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: #86efac; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #4ade80; }
 
-        /* Hide by default */
-        .screen {
-            display: none;
-        }
-        .screen.active {
-            display: flex;
-        }
+        .screen { display: none; }
+        .screen.active { display: flex; }
     </style>
 </head>
 <body class="text-gray-800 h-screen w-screen overflow-hidden flex flex-col">
 
-    <!-- Custom Modal (Alert/Confirm Alternative) -->
+    <!-- Custom Modal -->
     <div id="customModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden justify-center items-center backdrop-blur-sm">
         <div class="bg-white rounded-2xl p-6 w-11/12 max-w-sm shadow-2xl transform transition-all scale-100">
             <h3 id="modalTitle" class="text-2xl font-bold mb-2 text-green-600 text-center">알림</h3>
-            <p id="modalMessage" class="text-gray-600 mb-6 text-center text-lg"></p>
+            <p id="modalMessage" class="text-gray-600 mb-6 text-center text-lg whitespace-pre-line"></p>
             <div class="flex justify-center gap-3">
                 <button id="modalBtnCancel" class="hidden px-5 py-2 rounded-xl bg-gray-200 text-gray-700 hover:bg-gray-300 transition shadow">취소</button>
                 <button id="modalBtnOk" class="px-5 py-2 rounded-xl bg-green-500 text-white hover:bg-green-600 transition shadow">확인</button>
@@ -73,12 +45,25 @@
         </div>
     </div>
 
+    <!-- Game Setup Modal (단원 선택용) -->
+    <div id="setupModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden justify-center items-center backdrop-blur-sm">
+        <div class="bg-white rounded-2xl p-6 w-11/12 max-w-sm shadow-2xl text-center">
+            <h3 class="text-2xl font-bold mb-4 text-indigo-600">게임 준비</h3>
+            <p class="text-gray-600 mb-2">학습할 단원을 선택하세요.</p>
+            <select id="selectGameUnit" class="w-full border-2 border-gray-200 rounded-xl p-3 focus:border-indigo-400 focus:outline-none mb-6 text-lg font-bold">
+                <option value="default">기본 단어</option>
+            </select>
+            <div class="flex justify-center gap-3">
+                <button onclick="document.getElementById('setupModal').classList.replace('flex','hidden')" class="flex-1 px-4 py-3 rounded-xl bg-gray-200 text-gray-700 hover:bg-gray-300 transition shadow font-bold">취소</button>
+                <button id="btnConfirmSetup" class="flex-1 px-4 py-3 rounded-xl bg-indigo-500 text-white hover:bg-indigo-600 transition shadow font-bold">시작하기</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Header -->
     <header class="bg-green-400 p-4 shadow-md flex justify-between items-center relative z-10">
         <h1 class="text-2xl text-white font-bold tracking-wide drop-shadow-md cursor-pointer" onclick="goToMenu()">🃏 영단어 플립플립</h1>
-        <div id="userInfoDisplay" class="text-white text-sm bg-green-500 px-3 py-1 rounded-full shadow-inner hidden">
-            <!-- User info injected here -->
-        </div>
+        <div id="userInfoDisplay" class="text-white text-sm bg-green-500 px-3 py-1 rounded-full shadow-inner hidden"></div>
     </header>
 
     <!-- Main Container -->
@@ -87,10 +72,10 @@
         <!-- SCREEN 1: Login -->
         <section id="screen-login" class="screen active min-h-full flex-col justify-center items-center p-4">
             <div class="bg-white p-8 rounded-3xl shadow-xl w-full max-w-md border-4 border-green-200">
-                <h2 class="text-3xl text-center text-green-500 mb-6 font-bold">입학하기</h2>
+                <h2 class="text-3xl text-center text-green-500 mb-6 font-bold">학교 로그인</h2>
                 <div class="space-y-4">
                     <div>
-                        <label class="block text-sm text-gray-500 mb-1">학교 이름 <span class="text-red-400 text-xs">(정확히 입력해주세요)</span></label>
+                        <label class="block text-sm text-gray-500 mb-1">학교 이름 <span class="text-red-400 text-xs">(정확히 입력)</span></label>
                         <input type="text" id="loginSchool" class="w-full border-2 border-gray-200 rounded-xl p-3 focus:border-green-400 focus:outline-none transition" placeholder="예: 행복초등학교">
                     </div>
                     
@@ -111,18 +96,10 @@
                             <label class="block text-sm text-gray-500 mb-1">반</label>
                             <select id="loginClass" class="w-full border-2 border-gray-200 rounded-xl p-3 focus:border-green-400 focus:outline-none transition bg-white cursor-pointer appearance-none text-center">
                                 <option value="" disabled selected>선택</option>
-                                <option value="1">1반</option>
-                                <option value="2">2반</option>
-                                <option value="3">3반</option>
-                                <option value="4">4반</option>
-                                <option value="5">5반</option>
-                                <option value="6">6반</option>
-                                <option value="7">7반</option>
-                                <option value="8">8반</option>
-                                <option value="9">9반</option>
-                                <option value="10">10반</option>
-                                <option value="11">11반</option>
-                                <option value="12">12반</option>
+                                <option value="1">1반</option><option value="2">2반</option><option value="3">3반</option>
+                                <option value="4">4반</option><option value="5">5반</option><option value="6">6반</option>
+                                <option value="7">7반</option><option value="8">8반</option><option value="9">9반</option>
+                                <option value="10">10반</option><option value="11">11반</option><option value="12">12반</option>
                             </select>
                         </div>
                         <div class="flex-1">
@@ -136,9 +113,14 @@
                         <input type="text" id="loginName" class="w-full border-2 border-gray-200 rounded-xl p-3 focus:border-green-400 focus:outline-none transition" placeholder="예: 홍길동">
                     </div>
                     
-                    <div class="flex gap-3 mt-6">
-                        <button onclick="handleLogin('student')" class="flex-1 bg-green-500 hover:bg-green-600 text-white font-bold py-4 rounded-xl shadow-lg text-lg transition transform hover:-translate-y-1 active:scale-95">🎓 학생 입학</button>
-                        <button onclick="handleLogin('teacher')" class="flex-1 bg-orange-400 hover:bg-orange-500 text-white font-bold py-4 rounded-xl shadow-lg text-lg transition transform hover:-translate-y-1 active:scale-95">👩‍🏫 교사 로그인</button>
+                    <div class="flex flex-col gap-3 mt-6">
+                        <button onclick="handleLogin('student')" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-4 rounded-xl shadow-lg text-lg transition transform hover:-translate-y-1 active:scale-95">🎓 학생 입학 (게임 시작)</button>
+                        <div class="relative flex py-2 items-center">
+                            <div class="flex-grow border-t border-gray-300"></div>
+                            <span class="flex-shrink-0 mx-4 text-gray-400 text-sm">교사용</span>
+                            <div class="flex-grow border-t border-gray-300"></div>
+                        </div>
+                        <button onclick="handleLogin('teacher')" class="w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 rounded-xl shadow text-md transition transform active:scale-95">👩‍🏫 교사 로그인 (학생 설정 안함)</button>
                     </div>
                 </div>
             </div>
@@ -149,7 +131,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-3xl">
                 <!-- Student Options -->
                 <div id="studentMenu" class="col-span-1 md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-6 hidden">
-                    <button onclick="startSinglePlayer()" class="bg-white border-b-8 border-blue-200 p-8 rounded-3xl shadow-lg hover:shadow-xl transition transform hover:-translate-y-1 flex flex-col items-center gap-4">
+                    <button onclick="openSetupModal('single')" class="bg-white border-b-8 border-blue-200 p-8 rounded-3xl shadow-lg hover:shadow-xl transition transform hover:-translate-y-1 flex flex-col items-center gap-4">
                         <div class="text-6xl">👤</div>
                         <h3 class="text-2xl font-bold text-gray-700">혼자 하기</h3>
                         <p class="text-gray-500 text-sm">연습 게임을 즐겨보세요!</p>
@@ -163,14 +145,14 @@
 
                 <!-- Teacher Options -->
                 <div id="teacherMenu" class="col-span-1 md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-6 hidden">
-                    <button onclick="showScreen('screen-manage-words'); loadWords();" class="bg-white border-b-8 border-orange-200 p-8 rounded-3xl shadow-lg hover:shadow-xl transition transform hover:-translate-y-1 flex flex-col items-center gap-4">
-                        <div class="text-6xl">📝</div>
-                        <h3 class="text-2xl font-bold text-gray-700">단어 관리 (교사)</h3>
-                        <p class="text-gray-500 text-sm">게임에 나올 단어를 설정하세요.</p>
+                    <button onclick="showScreen('screen-manage-words'); loadTeacherSettings(); loadUnits();" class="bg-white border-b-8 border-orange-200 p-8 rounded-3xl shadow-lg hover:shadow-xl transition transform hover:-translate-y-1 flex flex-col items-center gap-4">
+                        <div class="text-6xl">⚙️</div>
+                        <h3 class="text-2xl font-bold text-gray-700">게임 세팅 및 단어</h3>
+                        <p class="text-gray-500 text-sm">카드 수 설정과 단원을 관리하세요.</p>
                     </button>
                     <button onclick="showScreen('screen-manage-students'); loadStudents();" class="bg-white border-b-8 border-teal-200 p-8 rounded-3xl shadow-lg hover:shadow-xl transition transform hover:-translate-y-1 flex flex-col items-center gap-4">
                         <div class="text-6xl">👩‍🏫</div>
-                        <h3 class="text-2xl font-bold text-gray-700">학생 관리 (교사)</h3>
+                        <h3 class="text-2xl font-bold text-gray-700">학생 데이터 관리</h3>
                         <p class="text-gray-500 text-sm">학생들의 정보를 확인합니다.</p>
                     </button>
                 </div>
@@ -181,33 +163,73 @@
                         <div class="text-5xl">🏆</div>
                         <div>
                             <h3 class="text-2xl font-bold text-gray-700">명예의 전당</h3>
-                            <p class="text-gray-500 text-sm">우리 학교에서 누가 가장 점수가 높을까요?</p>
+                            <p class="text-gray-500 text-sm">우리 학교 최고 점수 순위</p>
                         </div>
                     </button>
                 </div>
             </div>
         </section>
 
-        <!-- SCREEN 3: Teacher Manage Words -->
+        <!-- SCREEN 3: Teacher Manage Words & Settings -->
         <section id="screen-manage-words" class="screen min-h-full flex-col p-4 md:p-8 max-w-4xl mx-auto w-full">
             <div class="flex justify-between items-center mb-6">
-                <h2 class="text-3xl font-bold text-gray-800">단어장 관리 📝</h2>
+                <h2 class="text-3xl font-bold text-gray-800">단어장 및 설정 ⚙️</h2>
                 <button onclick="goToMenu()" class="bg-gray-200 px-4 py-2 rounded-xl text-gray-700 hover:bg-gray-300">뒤로 가기</button>
             </div>
             
-            <div class="bg-white p-6 rounded-3xl shadow-md mb-6">
-                <h3 class="text-xl font-bold mb-4">새 단어 추가 <span class="text-sm font-normal text-gray-500">(등록 시 우리 학교 학생들에게만 적용됩니다)</span></h3>
-                <div class="flex flex-col sm:flex-row gap-4">
-                    <input type="text" id="newWordText" placeholder="영어 단어 (예: Apple)" class="flex-1 border-2 border-gray-200 rounded-xl p-3 focus:border-orange-400 outline-none">
-                    <input type="text" id="newWordImg" placeholder="그림 이모지 (예: 🍎)" class="flex-1 border-2 border-gray-200 rounded-xl p-3 focus:border-orange-400 outline-none">
-                    <button onclick="addWord()" class="bg-orange-400 text-white font-bold px-6 py-3 rounded-xl hover:bg-orange-500 shadow">추가하기</button>
+            <!-- School Settings -->
+            <div class="bg-white p-6 rounded-3xl shadow-md mb-6 border-l-8 border-indigo-400">
+                <h3 class="text-xl font-bold mb-2">우리 학교 게임 설정</h3>
+                <p class="text-sm text-gray-500 mb-4">한 게임에 출현할 카드의 개수를 정합니다.</p>
+                <div class="flex items-center gap-4">
+                    <select id="settingPairCount" class="border-2 border-gray-200 rounded-xl p-3 focus:border-indigo-400 outline-none font-bold">
+                        <option value="6">6쌍 (총 12장)</option>
+                        <option value="8">8쌍 (총 16장)</option>
+                        <option value="10">10쌍 (총 20장)</option>
+                        <option value="12">12쌍 (총 24장)</option>
+                    </select>
+                    <button onclick="saveSchoolSetting()" class="bg-indigo-500 text-white font-bold px-6 py-3 rounded-xl hover:bg-indigo-600 shadow">저장하기</button>
                 </div>
             </div>
 
+            <!-- Unit Management -->
+            <div class="bg-white p-6 rounded-3xl shadow-md mb-6 border-l-8 border-orange-400">
+                <h3 class="text-xl font-bold mb-2">단원 추가</h3>
+                <div class="flex gap-4">
+                    <input type="text" id="newUnitName" placeholder="새 단원명 (예: 1단원 인사)" class="flex-1 border-2 border-gray-200 rounded-xl p-3 focus:border-orange-400 outline-none">
+                    <button onclick="addUnit()" class="bg-orange-400 text-white font-bold px-6 py-3 rounded-xl hover:bg-orange-500 shadow">생성</button>
+                </div>
+            </div>
+
+            <!-- Word Management -->
             <div class="bg-white p-6 rounded-3xl shadow-md flex-1 overflow-y-auto">
-                <h3 class="text-xl font-bold mb-4">등록된 우리 학교 단어 목록</h3>
-                <div id="wordList" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                    <!-- Words rendered here -->
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold">단어 관리</h3>
+                    <select id="filterUnit" onchange="loadWords()" class="border-2 border-gray-200 rounded-xl p-2 font-bold focus:outline-none">
+                        <option value="">단원 선택...</option>
+                    </select>
+                </div>
+
+                <div id="wordInputArea" class="hidden mb-6">
+                    <div class="bg-gray-50 p-4 rounded-xl border mb-4">
+                        <h4 class="font-bold text-gray-700 mb-2">단어 개별 추가</h4>
+                        <div class="flex flex-col sm:flex-row gap-2">
+                            <input type="text" id="newWordText" placeholder="영어 (예: Apple)" class="flex-1 border-2 border-gray-200 rounded-xl p-3 outline-none">
+                            <input type="text" id="newWordMeaning" placeholder="뜻 (예: 사과)" class="flex-1 border-2 border-gray-200 rounded-xl p-3 outline-none">
+                            <button onclick="addWordSingle()" class="bg-blue-500 text-white font-bold px-4 py-3 rounded-xl shadow">개별 추가</button>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-50 p-4 rounded-xl border">
+                        <h4 class="font-bold text-gray-700 mb-2">단어 일괄 추가 (여러 개 텍스트 복사/붙여넣기)</h4>
+                        <p class="text-xs text-gray-500 mb-2">쉼표(,) 쌍점(:) 탭, 슬래시(/) 등으로 영어와 뜻을 구분하여 여러 줄로 입력하세요.<br>예: Apple,사과 / Banana,바나나</p>
+                        <textarea id="bulkWordText" rows="4" class="w-full border-2 border-gray-200 rounded-xl p-3 outline-none mb-2" placeholder="Apple, 사과&#10;Banana: 바나나"></textarea>
+                        <button onclick="addWordBulk()" class="w-full bg-blue-600 text-white font-bold px-4 py-3 rounded-xl shadow hover:bg-blue-700">일괄 추가하기</button>
+                    </div>
+                </div>
+
+                <div id="wordList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    <p class="text-gray-500 col-span-full">단원을 선택해주세요.</p>
                 </div>
             </div>
         </section>
@@ -230,7 +252,6 @@
                         </tr>
                     </thead>
                     <tbody id="studentListBody" class="divide-y divide-gray-100">
-                        <!-- Students injected here -->
                     </tbody>
                 </table>
             </div>
@@ -245,7 +266,7 @@
                     <div class="p-6 bg-purple-50 rounded-2xl">
                         <h3 class="font-bold text-lg mb-2 text-gray-700">방 만들기</h3>
                         <p class="text-sm text-gray-500 mb-4">내가 호스트가 되어 친구를 초대해요.</p>
-                        <button onclick="createRoom()" class="w-full bg-purple-500 hover:bg-purple-600 text-white font-bold py-3 rounded-xl shadow">방 생성하기</button>
+                        <button onclick="openSetupModal('multi')" class="w-full bg-purple-500 hover:bg-purple-600 text-white font-bold py-3 rounded-xl shadow">방 생성하기</button>
                     </div>
 
                     <div class="relative flex py-2 items-center">
@@ -275,9 +296,7 @@
                 </div>
                 
                 <h3 class="text-lg font-bold text-left mb-3">참가자</h3>
-                <ul id="waitingPlayersList" class="space-y-3 mb-8">
-                    <!-- Players -->
-                </ul>
+                <ul id="waitingPlayersList" class="space-y-3 mb-8"></ul>
 
                 <button id="btnStartMultiGame" onclick="startMultiGame()" class="w-full bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-4 rounded-xl shadow-lg text-xl hidden">게임 시작!</button>
                 <p id="waitingMessage" class="text-gray-500 text-sm">호스트가 게임을 시작할 때까지 기다려주세요...</p>
@@ -285,26 +304,25 @@
             </div>
         </section>
 
-        <!-- SCREEN 6: The Game Board -->
+        <!-- SCREEN 6: Game Board -->
         <section id="screen-game" class="screen min-h-full flex-col p-4 w-full max-w-5xl mx-auto">
-            <div class="flex justify-between items-end mb-4 bg-white p-4 rounded-2xl shadow-sm">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-4 bg-white p-4 rounded-2xl shadow-sm gap-2">
                 <div>
                     <h2 id="gameModeTitle" class="text-2xl font-bold text-gray-800">플립 카드 게임</h2>
                     <p id="gameStatusText" class="text-gray-500 text-sm mt-1">카드를 맞춰보세요!</p>
                 </div>
-                <div class="text-right">
-                    <div id="gameScoreBoard" class="flex gap-4">
-                        <!-- Scores injected here -->
+                <div class="text-right w-full sm:w-auto overflow-x-auto pb-1">
+                    <div id="gameScoreBoard" class="flex gap-2 sm:gap-4 min-w-max">
+                        <!-- Scores -->
                     </div>
                 </div>
             </div>
 
-            <!-- Game Grid -->
-            <div id="gameBoard" class="flex-1 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3 sm:gap-4 content-start">
+            <div id="gameBoard" class="flex-1 grid gap-2 sm:gap-3 content-start justify-center">
                 <!-- Cards injected here -->
             </div>
             
-            <div class="mt-6 text-center">
+            <div class="mt-6 text-center pb-8">
                 <button onclick="confirmExitGame()" class="bg-gray-300 hover:bg-gray-400 text-gray-700 px-6 py-2 rounded-full font-bold shadow transition">게임 포기하기</button>
             </div>
         </section>
@@ -312,14 +330,11 @@
         <!-- SCREEN 7: Hall of Fame -->
         <section id="screen-hall-of-fame" class="screen min-h-full flex-col p-4 md:p-8 max-w-3xl mx-auto w-full">
             <div class="flex justify-between items-center mb-6">
-                <h2 class="text-3xl font-bold text-yellow-600">🏆 우리 학교 명예의 전당 🏆</h2>
+                <h2 class="text-3xl font-bold text-yellow-600">🏆 명예의 전당 🏆</h2>
                 <button onclick="goToMenu()" class="bg-gray-200 px-4 py-2 rounded-xl text-gray-700 hover:bg-gray-300">뒤로 가기</button>
             </div>
-            
             <div class="bg-white p-6 rounded-3xl shadow-xl border-4 border-yellow-200">
-                <ul id="rankingList" class="space-y-3">
-                    <!-- Rankings injected here -->
-                </ul>
+                <ul id="rankingList" class="space-y-3"></ul>
             </div>
         </section>
 
@@ -328,10 +343,19 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, getDocs, addDoc, query, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-analytics.js";
 
-        // Global Variables
+        const firebaseConfig = {
+            apiKey: "AIzaSyAaRTZlJ_fQAKl8j0lCJfaOdJyx8wMP5Zo",
+            authDomain: "tournament-267ab.firebaseapp.com",
+            projectId: "tournament-267ab",
+            storageBucket: "tournament-267ab.firebasestorage.app",
+            messagingSenderId: "401796751337",
+            appId: "1:401796751337:web:6f3ba64fde25adf1a8f578",
+            measurementId: "G-WMY07DTGFZ"
+        };
+
         const APP_ID = 'eng-flip-card-app';
         let app, auth, db, analytics;
         
@@ -339,6 +363,8 @@
         let currentRoomId = null;
         let unsubscribeRoom = null;
         let isMyTurn = false;
+        let schoolPairCount = 8; // Default 8 pairs (16 cards)
+        let availableUnits = [];
         
         // Game State
         let gameCards = [];
@@ -347,31 +373,30 @@
         let singlePlayerMatches = 0;
         let isProcessingFlipped = false;
 
-        // DB Paths
         const PATH_USERS = `artifacts/${APP_ID}/public/data/users`;
         const PATH_ROOMS = `artifacts/${APP_ID}/public/data/rooms`;
         const PATH_WORDS = `artifacts/${APP_ID}/public/data/words`;
+        const PATH_UNITS = `artifacts/${APP_ID}/public/data/units`;
+        const PATH_SETTINGS = `artifacts/${APP_ID}/public/data/settings`;
 
         const DEFAULT_WORDS = [
-            { text: 'Apple', img: '🍎' }, { text: 'Banana', img: '🍌' },
-            { text: 'Cat', img: '🐱' }, { text: 'Dog', img: '🐶' },
-            { text: 'Elephant', img: '🐘' }, { text: 'Fish', img: '🐟' },
-            { text: 'Grape', img: '🍇' }, { text: 'Hat', img: '🎩' }
+            { text: 'Apple', meaning: '사과' }, { text: 'Banana', meaning: '바나나' },
+            { text: 'Cat', meaning: '고양이' }, { text: 'Dog', meaning: '개' },
+            { text: 'Elephant', meaning: '코끼리' }, { text: 'Fish', meaning: '물고기' },
+            { text: 'Grape', meaning: '포도' }, { text: 'Hat', meaning: '모자' },
+            { text: 'Ice cream', meaning: '아이스크림' }, { text: 'Juice', meaning: '주스' },
+            { text: 'Kite', meaning: '연' }, { text: 'Lion', meaning: '사자' }
         ];
 
-        // --- Core UI Functions ---
+        // Core Functions
         window.showScreen = function(screenId) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(screenId).classList.add('active');
         };
 
         window.goToMenu = function() {
-            if(!currentUser) {
-                showScreen('screen-login');
-                return;
-            }
+            if(!currentUser) { showScreen('screen-login'); return; }
             if(currentRoomId) leaveRoom(); 
-            
             showScreen('screen-menu');
             if(currentUser.role === 'teacher') {
                 document.getElementById('teacherMenu').classList.remove('hidden');
@@ -392,28 +417,19 @@
             
             const newBtnOk = btnOk.cloneNode(true);
             btnOk.parentNode.replaceChild(newBtnOk, btnOk);
-            
             const newBtnCancel = btnCancel.cloneNode(true);
             btnCancel.parentNode.replaceChild(newBtnCancel, btnCancel);
 
             if (showCancel) {
                 newBtnCancel.classList.remove('hidden');
-                newBtnCancel.onclick = () => {
-                    modal.classList.add('hidden');
-                    modal.classList.remove('flex');
-                };
-            } else {
-                newBtnCancel.classList.add('hidden');
-            }
+                newBtnCancel.onclick = () => { modal.classList.replace('flex', 'hidden'); };
+            } else { newBtnCancel.classList.add('hidden'); }
 
             newBtnOk.onclick = () => {
-                modal.classList.add('hidden');
-                modal.classList.remove('flex');
+                modal.classList.replace('flex', 'hidden');
                 if(onOk) onOk();
             };
-
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
+            modal.classList.replace('hidden', 'flex');
         };
 
         function maskName(name) {
@@ -423,493 +439,332 @@
             return name.charAt(0) + "*".repeat(name.length - 2) + name.charAt(name.length - 1);
         }
 
-        function generateRoomCode() {
-            return Math.floor(1000 + Math.random() * 9000).toString();
-        }
-
-        // --- Firebase Initialization ---
         async function initApp() {
-            const firebaseConfig = {
-                apiKey: "AIzaSyAaRTZlJ_fQAKl8j0lCJfaOdJyx8wMP5Zo",
-                authDomain: "tournament-267ab.firebaseapp.com",
-                projectId: "tournament-267ab",
-                storageBucket: "tournament-267ab.firebasestorage.app",
-                messagingSenderId: "401796751337",
-                appId: "1:401796751337:web:6f3ba64fde25adf1a8f578",
-                measurementId: "G-WMY07DTGFZ"
-            };
-            
             try {
                 app = initializeApp(firebaseConfig);
                 auth = getAuth(app);
                 db = getFirestore(app);
                 analytics = getAnalytics(app); 
                 await signInAnonymously(auth);
-                console.log("Firebase Auth successful:", auth.currentUser.uid);
             } catch (error) {
-                console.error("Auth error:", error);
-                showModal("연결 오류", "데이터베이스 연결에 실패했습니다. 설정을 확인해주세요.");
+                showModal("연결 오류", "데이터베이스 연결에 실패했습니다.");
             }
         }
-        
-        document.addEventListener('DOMContentLoaded', () => {
-            initApp();
-        });
+        document.addEventListener('DOMContentLoaded', initApp);
 
-        // --- Login Logic ---
-        window.handleLogin = async function(role = 'student') {
-            if(!auth || !auth.currentUser) {
-                showModal("오류", "데이터베이스가 준비되지 않았습니다. 잠시 후 다시 시도해주세요.");
-                return;
-            }
+        // --- Login ---
+        window.handleLogin = async function(role) {
+            if(!auth || !auth.currentUser) { showModal("오류", "로딩 중입니다. 잠시 후 시도하세요."); return; }
 
             const school = document.getElementById('loginSchool').value.trim();
             const name = document.getElementById('loginName').value.trim();
-            
             let grade = 0, cls = 0, num = 0;
 
             if (role === 'student') {
                 grade = document.getElementById('loginGrade').value;
                 cls = document.getElementById('loginClass').value;
                 num = document.getElementById('loginNum').value.trim();
-
-                if(!school || !grade || !cls || !num || !name) {
-                    showModal("알림", "모든 정보를 입력 및 선택해주세요! (학년, 반, 번호, 이름)");
-                    return;
-                }
+                if(!school || !grade || !cls || !num || !name) { showModal("알림", "모든 정보를 입력하세요."); return; }
             } else {
-                if(!school || !name) {
-                    showModal("알림", "교사 로그인은 '학교 이름'과 '이름'이 필수입니다.");
-                    return;
-                }
+                if(!school || !name) { showModal("알림", "학교 이름과 교사 이름을 입력하세요."); return; }
             }
             
-            const userData = {
-                school,
-                grade: role === 'student' ? parseInt(grade) : 0,
-                class: role === 'student' ? parseInt(cls) : 0,
-                number: role === 'student' ? parseInt(num) : 0,
-                name,
-                role: role,
-                score: 0, 
-                lastLogin: new Date().toISOString()
-            };
+            const userData = { school, grade: parseInt(grade)||0, class: parseInt(cls)||0, number: parseInt(num)||0, name, role, score: 0 };
 
             try {
                 const userRef = doc(db, PATH_USERS, auth.currentUser.uid);
                 const docSnap = await getDoc(userRef);
-                if (docSnap.exists()) {
-                    userData.score = docSnap.data().score || 0;
-                }
-
+                if (docSnap.exists()) userData.score = docSnap.data().score || 0;
                 await setDoc(userRef, userData);
                 currentUser = { uid: auth.currentUser.uid, ...userData };
                 
-                let displayInfo = role === 'teacher' ? `${school} ${name} 선생님` : `${school} ${grade}-${cls} ${name}`;
-                document.getElementById('userInfoDisplay').innerText = displayInfo;
+                document.getElementById('userInfoDisplay').innerText = role === 'teacher' ? `${school} ${name} 선생님` : `${school} ${grade}-${cls} ${name}`;
                 document.getElementById('userInfoDisplay').classList.remove('hidden');
                 
+                // 학생 로그인 시 학교 세팅(카드수, 단원) 로드
+                if(role === 'student') await loadSchoolSettingsForStudent();
                 goToMenu();
-            } catch (error) {
-                showModal("오류", "가입/로그인 정보를 저장하는데 실패했습니다.");
-            }
+            } catch (e) { showModal("오류", "로그인 실패"); }
         };
 
-        // --- Teacher: Word Management (SCHOOL ISOLATED) ---
-        window.loadWords = async function() {
-            if(!auth || !auth.currentUser || !currentUser) return;
-            const wordsSnap = await getDocs(collection(db, PATH_WORDS));
-            const listDiv = document.getElementById('wordList');
-            listDiv.innerHTML = '';
-            
-            let words = [];
-            wordsSnap.forEach(d => {
-                let data = d.data();
-                // 오직 로그인한 선생님의 학교 단어만 가져옴
-                if(data.school === currentUser.school) {
-                    words.push({id: d.id, ...data});
+        // --- Shared DB Loading (Units & Settings) ---
+        async function loadSchoolSettingsForStudent() {
+            try {
+                const docRef = doc(db, PATH_SETTINGS, currentUser.school);
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) schoolPairCount = docSnap.data().pairCount || 8;
+                
+                const unitQ = query(collection(db, PATH_UNITS), where("school", "==", currentUser.school));
+                const unitSnap = await getDocs(unitQ);
+                availableUnits = [];
+                unitSnap.forEach(d => availableUnits.push({id: d.id, ...d.data()}));
+            } catch(e){}
+        }
+
+        // --- Teacher Settings ---
+        window.loadTeacherSettings = async function() {
+            try {
+                const docSnap = await getDoc(doc(db, PATH_SETTINGS, currentUser.school));
+                if(docSnap.exists() && docSnap.data().pairCount) {
+                    document.getElementById('settingPairCount').value = docSnap.data().pairCount;
                 }
-            });
-            
-            if(words.length === 0) {
-                listDiv.innerHTML = '<p class="text-gray-500 col-span-full">우리 학교에 등록된 단어가 없습니다. 샘플 단어가 게임에 사용됩니다.</p>';
-            } else {
-                words.forEach(w => {
-                    listDiv.innerHTML += `
-                        <div class="border rounded-xl p-3 flex justify-between items-center bg-gray-50 shadow-sm">
-                            <div class="flex items-center gap-2">
-                                <span class="text-2xl">${w.img}</span>
-                                <span class="font-bold text-lg text-gray-700">${w.text}</span>
-                            </div>
-                            <button onclick="deleteWord('${w.id}')" class="text-red-500 hover:text-red-700 px-2 py-1 bg-red-100 rounded-lg text-sm">삭제</button>
-                        </div>
-                    `;
-                });
-            }
+            } catch(e){}
         };
 
-        window.addWord = async function() {
-            const text = document.getElementById('newWordText').value.trim();
-            const img = document.getElementById('newWordImg').value.trim();
-            if(!text || !img) {
-                showModal("알림", "단어와 이모지를 모두 입력하세요.");
+        window.saveSchoolSetting = async function() {
+            const count = parseInt(document.getElementById('settingPairCount').value);
+            try {
+                await setDoc(doc(db, PATH_SETTINGS, currentUser.school), { pairCount: count });
+                showModal("성공", "기본 카드 개수가 설정되었습니다.");
+            } catch(e) { showModal("오류", "설정 저장 실패"); }
+        };
+
+        window.loadUnits = async function() {
+            const unitQ = query(collection(db, PATH_UNITS), where("school", "==", currentUser.school));
+            const unitSnap = await getDocs(unitQ);
+            const select = document.getElementById('filterUnit');
+            select.innerHTML = '<option value="">단원 선택...</option>';
+            unitSnap.forEach(d => {
+                select.innerHTML += `<option value="${d.id}">${d.data().name}</option>`;
+            });
+            document.getElementById('wordInputArea').classList.add('hidden');
+            document.getElementById('wordList').innerHTML = '<p class="text-gray-500 col-span-full">단원을 선택해주세요.</p>';
+        };
+
+        window.addUnit = async function() {
+            const name = document.getElementById('newUnitName').value.trim();
+            if(!name) return showModal("알림", "단원명을 입력하세요.");
+            try {
+                await addDoc(collection(db, PATH_UNITS), { name, school: currentUser.school, created: Date.now() });
+                document.getElementById('newUnitName').value = '';
+                loadUnits();
+            } catch(e) { showModal("오류", "단원 생성 실패"); }
+        };
+
+        // --- Teacher Word Management ---
+        window.loadWords = async function() {
+            const unitId = document.getElementById('filterUnit').value;
+            const listDiv = document.getElementById('wordList');
+            const inputArea = document.getElementById('wordInputArea');
+            
+            if(!unitId) {
+                listDiv.innerHTML = '<p class="text-gray-500 col-span-full">단원을 선택해주세요.</p>';
+                inputArea.classList.add('hidden');
                 return;
             }
+            
+            inputArea.classList.remove('hidden');
+            listDiv.innerHTML = '불러오는 중...';
+            
+            const wQ = query(collection(db, PATH_WORDS), where("school", "==", currentUser.school), where("unit", "==", unitId));
+            const wordsSnap = await getDocs(wQ);
+            
+            let words = [];
+            wordsSnap.forEach(d => words.push({id: d.id, ...d.data()}));
+            
+            if(words.length === 0) {
+                listDiv.innerHTML = '<p class="text-gray-500 col-span-full">이 단원에 등록된 단어가 없습니다.</p>';
+            } else {
+                listDiv.innerHTML = words.map(w => `
+                    <div class="border rounded-xl p-3 bg-white shadow-sm flex justify-between items-center">
+                        <div class="flex flex-col">
+                            <span class="font-bold text-lg text-indigo-700">${w.text}</span>
+                            <span class="text-gray-600 text-sm">${w.meaning || w.img}</span>
+                        </div>
+                        <button onclick="deleteWord('${w.id}')" class="text-red-500 bg-red-50 px-2 py-1 rounded text-sm hover:bg-red-100">삭제</button>
+                    </div>
+                `).join('');
+            }
+        };
+
+        window.addWordSingle = async function() {
+            const unitId = document.getElementById('filterUnit').value;
+            const text = document.getElementById('newWordText').value.trim();
+            const meaning = document.getElementById('newWordMeaning').value.trim();
+            if(!text || !meaning) return showModal("알림", "단어와 뜻을 입력하세요.");
             try {
-                // 단어 저장 시 'school' 정보도 함께 저장
-                await addDoc(collection(db, PATH_WORDS), { 
-                    text, 
-                    img,
-                    school: currentUser.school 
-                });
+                await addDoc(collection(db, PATH_WORDS), { text, meaning, school: currentUser.school, unit: unitId });
                 document.getElementById('newWordText').value = '';
-                document.getElementById('newWordImg').value = '';
+                document.getElementById('newWordMeaning').value = '';
                 loadWords();
             } catch (e) { showModal("오류", "추가 실패"); }
         };
 
+        window.addWordBulk = async function() {
+            const unitId = document.getElementById('filterUnit').value;
+            const textRaw = document.getElementById('bulkWordText').value;
+            const lines = textRaw.split('\n');
+            let promises = [];
+            let count = 0;
+            
+            for(let line of lines) {
+                if(!line.trim()) continue;
+                let parts = line.split(/[,:\t/]/);
+                if(parts.length >= 2) {
+                    let text = parts[0].trim();
+                    let meaning = parts[1].trim();
+                    if(text && meaning) {
+                        promises.push(addDoc(collection(db, PATH_WORDS), { text, meaning, school: currentUser.school, unit: unitId }));
+                        count++;
+                    }
+                }
+            }
+            if(count === 0) return showModal("알림", "형식에 맞는 단어를 찾을 수 없습니다.");
+            
+            try {
+                await Promise.all(promises);
+                document.getElementById('bulkWordText').value = '';
+                loadWords();
+                showModal("성공", `${count}개의 단어가 일괄 추가되었습니다.`);
+            } catch(e) { showModal("오류", "일괄 추가 중 오류 발생"); }
+        };
+
         window.deleteWord = async function(id) {
             showModal("단어 삭제", "정말 삭제하시겠습니까?", async () => {
-                try {
-                    await deleteDoc(doc(db, PATH_WORDS, id));
-                    loadWords();
-                } catch (e) { showModal("오류", "삭제 실패"); }
+                await deleteDoc(doc(db, PATH_WORDS, id));
+                loadWords();
             }, true);
         };
 
-        // --- Teacher: Student DB Management (SCHOOL ISOLATED) ---
         window.loadStudents = async function() {
-            if(!auth || !auth.currentUser || !currentUser) return;
-            const usersSnap = await getDocs(collection(db, PATH_USERS));
+            const q = query(collection(db, PATH_USERS), where("school", "==", currentUser.school), where("role", "==", "student"));
+            const usersSnap = await getDocs(q);
             const tbody = document.getElementById('studentListBody');
-            tbody.innerHTML = '';
-            
             let students = [];
-            usersSnap.forEach(d => {
-                let data = d.data();
-                // 학생이면서, 선생님과 같은 학교인 경우만 목록에 추가
-                if(data.role === 'student' && data.school === currentUser.school) {
-                    students.push({id: d.id, ...data});
-                }
-            });
+            usersSnap.forEach(d => students.push({id: d.id, ...d.data()}));
             
-            students.sort((a,b) => {
-                if(a.grade !== b.grade) return a.grade - b.grade;
-                if(a.class !== b.class) return a.class - b.class;
-                return a.number - b.number;
-            });
+            students.sort((a,b) => a.grade !== b.grade ? a.grade - b.grade : a.class !== b.class ? a.class - b.class : a.number - b.number);
 
-            if(students.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-gray-500">우리 학교에 등록된 학생이 없습니다.</td></tr>';
-            } else {
-                students.forEach(s => {
-                    tbody.innerHTML += `
-                        <tr class="hover:bg-gray-50 transition">
-                            <td class="p-3 border-b text-gray-700">${s.grade}학년 ${s.class}반</td>
-                            <td class="p-3 border-b font-bold text-gray-800">${s.number}번 ${s.name}</td>
-                            <td class="p-3 border-b text-blue-600 font-bold">${s.score}점</td>
-                            <td class="p-3 border-b text-center">
-                                <button onclick="deleteStudent('${s.id}')" class="text-xs bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600">삭제</button>
-                            </td>
-                        </tr>
-                    `;
-                });
+            if(students.length === 0) tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-gray-500">학생이 없습니다.</td></tr>';
+            else {
+                tbody.innerHTML = students.map(s => `
+                    <tr class="hover:bg-gray-50">
+                        <td class="p-3 border-b">${s.grade}학년 ${s.class}반</td>
+                        <td class="p-3 border-b font-bold">${s.number}번 ${s.name}</td>
+                        <td class="p-3 border-b text-blue-600 font-bold">${s.score}점</td>
+                        <td class="p-3 border-b text-center"><button onclick="deleteDoc(doc(db, '${PATH_USERS}', '${s.id}')).then(loadStudents)" class="text-xs bg-red-500 text-white px-2 py-1 rounded">삭제</button></td>
+                    </tr>`).join('');
             }
         };
 
-        window.deleteStudent = async function(id) {
-            showModal("학생 삭제", "이 학생의 데이터를 삭제하시겠습니까?", async () => {
-                try {
-                    await deleteDoc(doc(db, PATH_USERS, id));
-                    loadStudents();
-                } catch (e) { showModal("오류", "삭제 실패"); }
-            }, true);
-        };
-
-        // --- Hall of Fame (SCHOOL ISOLATED) ---
         window.loadHallOfFame = async function() {
-            if(!auth || !auth.currentUser || !currentUser) return;
-            const usersSnap = await getDocs(collection(db, PATH_USERS));
+            const q = query(collection(db, PATH_USERS), where("school", "==", currentUser.school), where("role", "==", "student"));
+            const usersSnap = await getDocs(q);
             const list = document.getElementById('rankingList');
-            list.innerHTML = '<div class="text-center text-gray-500 my-4">데이터를 불러오는 중...</div>';
-            
             let students = [];
-            usersSnap.forEach(d => {
-                let data = d.data();
-                // 같은 학교 학생들만 명예의 전당에 노출
-                if(data.role === 'student' && data.score > 0 && data.school === currentUser.school) {
-                    students.push(data);
-                }
-            });
+            usersSnap.forEach(d => { if(d.data().score > 0) students.push(d.data()); });
             
             students.sort((a,b) => b.score - a.score);
             let topStudents = students.slice(0, 10);
 
-            list.innerHTML = '';
-            if(topStudents.length === 0) {
-                list.innerHTML = '<li class="text-center text-gray-500 my-4">아직 점수를 등록한 학생이 없습니다.</li>';
-                return;
-            }
-
-            topStudents.forEach((s, index) => {
-                let badge = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `${index+1}위`;
-                let bgClass = index < 3 ? 'bg-yellow-50 border-yellow-200 border-2 shadow' : 'bg-gray-50 border-gray-200 border';
-                
-                list.innerHTML += `
-                    <li class="${bgClass} p-4 rounded-2xl flex justify-between items-center transition transform hover:scale-[1.01]">
-                        <div class="flex items-center gap-4">
-                            <span class="text-2xl font-bold w-10 text-center">${badge}</span>
-                            <div>
-                                <span class="font-bold text-lg text-gray-800">${s.grade}-${s.class}</span>
-                                <span class="ml-2 text-gray-600">${maskName(s.name)}</span>
-                            </div>
-                        </div>
-                        <span class="text-xl font-black text-yellow-600">${s.score} 점</span>
-                    </li>
-                `;
-            });
+            if(topStudents.length === 0) { list.innerHTML = '<li class="text-center text-gray-500">점수가 없습니다.</li>'; return; }
+            list.innerHTML = topStudents.map((s, i) => `
+                <li class="${i < 3 ? 'bg-yellow-50 border-yellow-200 shadow' : 'bg-gray-50 border-gray-200'} border p-4 rounded-2xl flex justify-between items-center">
+                    <div class="flex items-center gap-4">
+                        <span class="text-2xl font-bold w-10 text-center">${i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i+1+'위'}</span>
+                        <div><span class="font-bold">${s.grade}-${s.class}</span> <span class="text-gray-600">${maskName(s.name)}</span></div>
+                    </div>
+                    <span class="text-xl font-black text-yellow-600">${s.score} 점</span>
+                </li>
+            `).join('');
         };
 
-        // --- Multiplayer Logic ---
-        window.createRoom = async function() {
-            const code = generateRoomCode();
-            const roomData = {
-                code: code,
-                host: currentUser.uid,
-                school: currentUser.school, // 학교 정보 기록
-                status: 'waiting',
-                players: {},
-                turnOrder: [],
-                currentTurnIndex: 0,
-                cards: [],
-                createdAt: new Date().toISOString()
+        // --- Game Pre-Setup Modal ---
+        let pendingGameMode = '';
+        window.openSetupModal = async function(mode) {
+            pendingGameMode = mode;
+            await loadSchoolSettingsForStudent();
+            const select = document.getElementById('selectGameUnit');
+            select.innerHTML = '<option value="default">기본 단어 (샘플)</option>';
+            availableUnits.forEach(u => { select.innerHTML += `<option value="${u.id}">${u.name}</option>`; });
+            
+            document.getElementById('btnConfirmSetup').onclick = () => {
+                document.getElementById('setupModal').classList.replace('flex', 'hidden');
+                if(mode === 'single') startSinglePlayer();
+                else createRoom();
             };
-            
-            roomData.players[currentUser.uid] = { name: currentUser.name, score: 0, isHost: true };
-            roomData.turnOrder.push(currentUser.uid);
-
-            try {
-                const roomRef = await addDoc(collection(db, PATH_ROOMS), roomData);
-                currentRoomId = roomRef.id;
-                
-                showScreen('screen-waiting-room');
-                document.getElementById('displayRoomCode').innerText = code;
-                document.getElementById('btnStartMultiGame').classList.remove('hidden');
-                document.getElementById('waitingMessage').classList.add('hidden');
-                
-                listenToRoom();
-            } catch (e) { showModal("오류", "방 생성 실패"); }
+            document.getElementById('setupModal').classList.replace('hidden', 'flex');
         };
 
-        window.joinRoom = async function() {
-            const code = document.getElementById('joinRoomCode').value.trim().toUpperCase();
-            if(code.length !== 4) { showModal("알림", "4자리 코드를 입력하세요."); return; }
-
-            try {
-                const roomsSnap = await getDocs(collection(db, PATH_ROOMS));
-                let targetRoom = null;
-                roomsSnap.forEach(d => {
-                    let r = d.data();
-                    if(r.code === code && r.status === 'waiting') targetRoom = {id: d.id, ...r};
-                });
-
-                if(!targetRoom) {
-                    showModal("알림", "존재하지 않거나 이미 시작된 방입니다.");
-                    return;
-                }
-                
-                // (선택) 다른 학교 방 못 들어가게 막기
-                if(targetRoom.school !== currentUser.school) {
-                    showModal("입장 불가", "다른 학교의 방에는 입장할 수 없습니다.");
-                    return;
-                }
-
-                currentRoomId = targetRoom.id;
-                const roomRef = doc(db, PATH_ROOMS, currentRoomId);
-                let updatedPlayers = { ...targetRoom.players };
-                let updatedTurnOrder = [...targetRoom.turnOrder];
-                
-                if(!updatedPlayers[currentUser.uid]) {
-                    updatedPlayers[currentUser.uid] = { name: currentUser.name, score: 0, isHost: false };
-                    updatedTurnOrder.push(currentUser.uid);
-                    await updateDoc(roomRef, { players: updatedPlayers, turnOrder: updatedTurnOrder });
-                }
-
-                showScreen('screen-waiting-room');
-                document.getElementById('displayRoomCode').innerText = code;
-                document.getElementById('btnStartMultiGame').classList.add('hidden');
-                document.getElementById('waitingMessage').classList.remove('hidden');
-
-                listenToRoom();
-            } catch (e) {
-                showModal("오류", "방 입장 실패");
-            }
-        };
-
-        function listenToRoom() {
-            if(unsubscribeRoom) unsubscribeRoom();
-            
-            const roomRef = doc(db, PATH_ROOMS, currentRoomId);
-            unsubscribeRoom = onSnapshot(roomRef, (docSnap) => {
-                if(!docSnap.exists()) {
-                    showModal("알림", "방이 삭제되었습니다.");
-                    goToMenu();
-                    return;
-                }
-
-                const room = docSnap.data();
-                
-                if(room.status === 'waiting') {
-                    const ul = document.getElementById('waitingPlayersList');
-                    ul.innerHTML = '';
-                    room.turnOrder.forEach(uid => {
-                        const p = room.players[uid];
-                        ul.innerHTML += `<li class="bg-gray-50 p-3 rounded-lg border flex justify-between items-center">
-                            <span class="font-bold text-gray-700">${maskName(p.name)}</span>
-                            ${p.isHost ? '<span class="text-xs bg-indigo-500 text-white px-2 py-1 rounded">방장</span>' : ''}
-                        </li>`;
-                    });
-                }
-
-                if(room.status === 'playing' && document.getElementById('screen-waiting-room').classList.contains('active')) {
-                    setupMultiplayerBoard(room);
-                }
-
-                if(room.status === 'playing' && document.getElementById('screen-game').classList.contains('active')) {
-                    syncMultiplayerBoard(room);
-                }
-                
-                if(room.status === 'finished' && document.getElementById('screen-game').classList.contains('active')) {
-                    handleMultiplayerFinish(room);
-                }
-
-            }, (error) => {});
-        }
-
-        window.leaveRoom = async function() {
-            if(currentRoomId && unsubscribeRoom) {
-                unsubscribeRoom();
-                const roomRef = doc(db, PATH_ROOMS, currentRoomId);
-                try {
-                    const d = await getDoc(roomRef);
-                    if(d.exists()) {
-                        const r = d.data();
-                        if(r.host === currentUser.uid) {
-                            await deleteDoc(roomRef);
-                        } else {
-                            let upP = {...r.players};
-                            delete upP[currentUser.uid];
-                            let upT = r.turnOrder.filter(uid => uid !== currentUser.uid);
-                            await updateDoc(roomRef, { players: upP, turnOrder: upT });
-                        }
-                    }
-                } catch(e){}
-            }
-            currentRoomId = null;
-            goToMenu();
-        };
-
-        window.startMultiGame = async function() {
-            const cards = await generateDeck();
-            const roomRef = doc(db, PATH_ROOMS, currentRoomId);
-            await updateDoc(roomRef, {
-                status: 'playing',
-                cards: cards,
-                currentTurnIndex: 0
-            });
-        };
-
-        // --- Core Game Logic ---
-        async function generateDeck() {
+        // --- Deck Generator ---
+        async function generateDeck(unitId) {
             let baseWords = [];
-            try {
-                const wordsSnap = await getDocs(collection(db, PATH_WORDS));
-                wordsSnap.forEach(d => {
-                    let data = d.data();
-                    // 내 학교 단어만 덱에 추가
-                    if(data.school === currentUser.school) {
-                        baseWords.push(data);
-                    }
-                });
-            } catch(e){}
-
-            // 학교 단어가 모자라면 기본 단어 사용
-            if(baseWords.length < 4) {
-                baseWords = [...DEFAULT_WORDS];
+            if(unitId !== 'default') {
+                const wQ = query(collection(db, PATH_WORDS), where("school", "==", currentUser.school), where("unit", "==", unitId));
+                const wordsSnap = await getDocs(wQ);
+                wordsSnap.forEach(d => baseWords.push(d.data()));
             }
+            if(baseWords.length < 4) baseWords = [...DEFAULT_WORDS];
             
-            baseWords = baseWords.sort(() => 0.5 - Math.random()).slice(0, 8);
+            // Limit by school setting (pairCount)
+            baseWords = baseWords.sort(() => 0.5 - Math.random()).slice(0, schoolPairCount);
             
             let deck = [];
-            baseWords.forEach((w, index) => {
-                let pairId = `pair_${index}`;
-                deck.push({ id: `w_${index}`, pairId, type: 'word', content: w.text, isFlipped: false, isMatched: false, matchedBy: null });
-                deck.push({ id: `i_${index}`, pairId, type: 'img', content: w.img, isFlipped: false, isMatched: false, matchedBy: null });
+            baseWords.forEach((w, i) => {
+                let pairId = `pair_${i}`;
+                deck.push({ id: `w_${i}`, pairId, type: 'text', content: w.text, isFlipped: false, isMatched: false, matchedBy: null });
+                deck.push({ id: `m_${i}`, pairId, type: 'meaning', content: w.meaning || w.img, isFlipped: false, isMatched: false, matchedBy: null });
             });
-
-            deck.sort(() => 0.5 - Math.random());
-            return deck;
+            return deck.sort(() => 0.5 - Math.random());
         }
 
-        // Render Board with Matched Styles Updated
+        // --- Render Board Dynamically ---
+        function setBoardGrid(totalCards) {
+            const board = document.getElementById('gameBoard');
+            board.className = 'flex-1 grid gap-2 sm:gap-3 content-start justify-center mx-auto w-full';
+            if(totalCards <= 12) board.classList.add('grid-cols-3', 'sm:grid-cols-4', 'max-w-3xl');
+            else if(totalCards <= 16) board.classList.add('grid-cols-4', 'max-w-4xl');
+            else if(totalCards <= 20) board.classList.add('grid-cols-4', 'sm:grid-cols-5', 'max-w-5xl');
+            else board.classList.add('grid-cols-4', 'sm:grid-cols-6', 'max-w-6xl');
+        }
+
         function renderBoard(cards, onCardClick) {
             const board = document.getElementById('gameBoard');
             board.innerHTML = '';
+            setBoardGrid(cards.length);
             
             cards.forEach((card, index) => {
                 const cardDiv = document.createElement('div');
-                cardDiv.className = `perspective aspect-square w-full cursor-pointer`;
+                cardDiv.className = `perspective aspect-square w-full cursor-pointer max-h-32 sm:max-h-40`;
                 
                 const innerClass = card.isFlipped || card.isMatched ? 'rotate-y-180' : '';
-                // opacity-50 제거, 명확한 테두리 색상 유지
                 const matchedClass = card.isMatched ? 'z-0' : 'z-10 hover:scale-105 transition-transform';
-                const borderColor = card.isMatched ? 'border-yellow-400 border-4' : 'border-green-200 border-4';
+                const borderColor = card.isMatched ? 'border-yellow-400 border-[3px] shadow-yellow-200 shadow-lg' : 'border-green-200 border-4';
                 const bgFrontColor = card.isMatched ? 'bg-yellow-50' : 'bg-white';
+                const textStyle = card.type === 'text' ? 'text-lg sm:text-2xl text-indigo-700' : 'text-md sm:text-xl text-gray-800';
 
                 cardDiv.innerHTML = `
                     <div class="relative w-full h-full transform-style-3d ${innerClass} ${matchedClass}" id="card-inner-${index}">
                         <div class="absolute w-full h-full backface-hidden bg-gradient-to-br from-green-400 to-green-600 rounded-2xl shadow-md border-4 border-white flex items-center justify-center">
-                            <span class="text-white text-3xl font-black opacity-30">?</span>
+                            <span class="text-white text-3xl opacity-30 font-black">?</span>
                         </div>
                         <div class="absolute w-full h-full backface-hidden card-front ${bgFrontColor} rounded-2xl shadow-md ${borderColor} flex flex-col items-center justify-center p-2 text-center break-words overflow-hidden">
-                            <span class="${card.type === 'img' ? 'text-4xl sm:text-5xl' : 'text-xl sm:text-2xl font-bold text-gray-800'} ${card.isMatched ? 'mb-4' : ''}">${card.content}</span>
+                            <span class="font-bold ${textStyle} ${card.isMatched ? 'mb-4' : ''}">${card.content}</span>
                             ${card.isMatched && card.matchedBy ? `<div class="absolute bottom-0 left-0 w-full bg-yellow-400 text-yellow-900 text-xs sm:text-sm py-1 font-bold text-center truncate px-1 shadow-inner shadow-yellow-500">${card.matchedBy}</div>` : ''}
                         </div>
                     </div>
                 `;
-
-                if(!card.isMatched && !card.isFlipped) {
-                    cardDiv.onclick = () => onCardClick(index);
-                }
-                
+                if(!card.isMatched && !card.isFlipped) cardDiv.onclick = () => onCardClick(index);
                 board.appendChild(cardDiv);
             });
         }
 
-        // --- Single Player Mode ---
+        // --- Single Player ---
         window.startSinglePlayer = async function() {
             showScreen('screen-game');
-            document.getElementById('gameModeTitle').innerText = "혼자 연습하기";
-            document.getElementById('gameStatusText').innerText = "모든 카드를 맞춰보세요!";
+            document.getElementById('gameModeTitle').innerText = "혼자 하기";
+            const unitId = document.getElementById('selectGameUnit').value;
             currentRoomId = null;
             
-            gameCards = await generateDeck();
-            flippedIndices = [];
-            singlePlayerScore = 0;
-            singlePlayerMatches = 0;
-            isProcessingFlipped = false;
+            gameCards = await generateDeck(unitId);
+            flippedIndices = []; singlePlayerScore = 0; singlePlayerMatches = 0; isProcessingFlipped = false;
             
             updateSinglePlayerScoreBoard();
             renderBoard(gameCards, handleSinglePlayerCardClick);
         };
 
         function updateSinglePlayerScoreBoard() {
-            const sb = document.getElementById('gameScoreBoard');
-            sb.innerHTML = `
-                <div class="bg-blue-100 px-4 py-2 rounded-xl text-blue-800 font-bold border-2 border-blue-200 shadow-sm">
-                    점수: ${singlePlayerScore}
-                </div>
-            `;
+            document.getElementById('gameScoreBoard').innerHTML = `<div class="bg-blue-100 px-4 py-2 rounded-xl text-blue-800 font-bold border-2 border-blue-200">점수: ${singlePlayerScore}</div>`;
         }
 
         async function handleSinglePlayerCardClick(index) {
@@ -924,26 +779,20 @@
                 const [idx1, idx2] = flippedIndices;
                 
                 if(gameCards[idx1].pairId === gameCards[idx2].pairId) {
-                    singlePlayerScore += 10;
-                    singlePlayerMatches++;
+                    singlePlayerScore += 10; singlePlayerMatches++;
                     setTimeout(() => {
-                        gameCards[idx1].isMatched = true;
-                        gameCards[idx2].isMatched = true;
-                        gameCards[idx1].matchedBy = currentUser ? maskName(currentUser.name) : "나";
-                        gameCards[idx2].matchedBy = currentUser ? maskName(currentUser.name) : "나";
-                        flippedIndices = [];
-                        updateSinglePlayerScoreBoard();
+                        gameCards[idx1].isMatched = true; gameCards[idx2].isMatched = true;
+                        gameCards[idx1].matchedBy = maskName(currentUser.name);
+                        gameCards[idx2].matchedBy = maskName(currentUser.name);
+                        flippedIndices = []; updateSinglePlayerScoreBoard();
                         renderBoard(gameCards, handleSinglePlayerCardClick);
-                        isProcessingFlipped = false;
-                        checkSinglePlayerWin();
+                        isProcessingFlipped = false; checkSinglePlayerWin();
                     }, 800);
                 } else {
                     singlePlayerScore = Math.max(0, singlePlayerScore - 2);
                     setTimeout(() => {
-                        gameCards[idx1].isFlipped = false;
-                        gameCards[idx2].isFlipped = false;
-                        flippedIndices = [];
-                        updateSinglePlayerScoreBoard();
+                        gameCards[idx1].isFlipped = false; gameCards[idx2].isFlipped = false;
+                        flippedIndices = []; updateSinglePlayerScoreBoard();
                         renderBoard(gameCards, handleSinglePlayerCardClick);
                         isProcessingFlipped = false;
                     }, 1200);
@@ -953,136 +802,172 @@
 
         async function checkSinglePlayerWin() {
             if(singlePlayerMatches === gameCards.length / 2) {
-                if(currentUser && currentUser.score < singlePlayerScore) {
-                    try {
-                        await updateDoc(doc(db, PATH_USERS, currentUser.uid), { score: singlePlayerScore });
-                        currentUser.score = singlePlayerScore;
-                    } catch(e){}
+                if(currentUser.score < singlePlayerScore) {
+                    try { await updateDoc(doc(db, PATH_USERS, currentUser.uid), { score: singlePlayerScore }); currentUser.score = singlePlayerScore; } catch(e){}
                 }
-                showModal("최고예요! 🎉", `모든 카드를 맞췄습니다!\n최종 점수: ${singlePlayerScore}점`, () => goToMenu());
+                showModal("성공! 🎉", `모든 카드를 맞췄습니다!\n최종 점수: ${singlePlayerScore}점`, () => goToMenu());
             }
         }
 
-        // --- Multiplayer Game Loop ---
-        function setupMultiplayerBoard(room) {
-            showScreen('screen-game');
-            document.getElementById('gameModeTitle').innerText = "멀티플레이 게임";
+        // --- Multi Player ---
+        window.createRoom = async function() {
+            const unitId = document.getElementById('selectGameUnit').value;
+            const code = Math.floor(1000 + Math.random() * 9000).toString();
+            const roomData = {
+                code, host: currentUser.uid, school: currentUser.school, unit: unitId,
+                status: 'waiting', players: {}, turnOrder: [currentUser.uid], currentTurnIndex: 0, cards: []
+            };
+            roomData.players[currentUser.uid] = { name: currentUser.name, score: 0, isHost: true };
+
+            try {
+                const roomRef = await addDoc(collection(db, PATH_ROOMS), roomData);
+                currentRoomId = roomRef.id;
+                showScreen('screen-waiting-room');
+                document.getElementById('displayRoomCode').innerText = code;
+                document.getElementById('btnStartMultiGame').classList.remove('hidden');
+                document.getElementById('waitingMessage').classList.add('hidden');
+                listenToRoom();
+            } catch (e) { showModal("오류", "방 생성 실패"); }
+        };
+
+        window.joinRoom = async function() {
+            const code = document.getElementById('joinRoomCode').value.trim().toUpperCase();
+            if(code.length !== 4) return showModal("알림", "4자리 코드를 입력하세요.");
+            try {
+                const roomsSnap = await getDocs(collection(db, PATH_ROOMS));
+                let targetRoom = null;
+                roomsSnap.forEach(d => { let r = d.data(); if(r.code === code && r.status === 'waiting') targetRoom = {id: d.id, ...r}; });
+
+                if(!targetRoom) return showModal("알림", "존재하지 않거나 시작된 방입니다.");
+                if(targetRoom.school !== currentUser.school) return showModal("불가", "다른 학교 방입니다.");
+
+                currentRoomId = targetRoom.id;
+                const roomRef = doc(db, PATH_ROOMS, currentRoomId);
+                let upP = { ...targetRoom.players }, upT = [...targetRoom.turnOrder];
+                if(!upP[currentUser.uid]) {
+                    upP[currentUser.uid] = { name: currentUser.name, score: 0, isHost: false };
+                    upT.push(currentUser.uid);
+                    await updateDoc(roomRef, { players: upP, turnOrder: upT });
+                }
+                showScreen('screen-waiting-room');
+                document.getElementById('displayRoomCode').innerText = code;
+                document.getElementById('btnStartMultiGame').classList.add('hidden');
+                document.getElementById('waitingMessage').classList.remove('hidden');
+                listenToRoom();
+            } catch (e) { showModal("오류", "입장 실패"); }
+        };
+
+        function listenToRoom() {
+            if(unsubscribeRoom) unsubscribeRoom();
+            unsubscribeRoom = onSnapshot(doc(db, PATH_ROOMS, currentRoomId), (docSnap) => {
+                if(!docSnap.exists()) { showModal("알림", "방이 삭제되었습니다."); goToMenu(); return; }
+                const room = docSnap.data();
+                
+                if(room.status === 'waiting') {
+                    const ul = document.getElementById('waitingPlayersList'); ul.innerHTML = '';
+                    room.turnOrder.forEach(uid => {
+                        let p = room.players[uid];
+                        ul.innerHTML += `<li class="bg-gray-50 p-3 rounded-lg border flex justify-between items-center"><span class="font-bold">${maskName(p.name)}</span>${p.isHost ? '<span class="text-xs bg-indigo-500 text-white px-2 py-1 rounded">방장</span>' : ''}</li>`;
+                    });
+                }
+                if(room.status === 'playing' && document.getElementById('screen-waiting-room').classList.contains('active')) showScreen('screen-game');
+                if(room.status === 'playing' && document.getElementById('screen-game').classList.contains('active')) syncMultiplayerBoard(room);
+                if(room.status === 'finished' && document.getElementById('screen-game').classList.contains('active')) handleMultiplayerFinish(room);
+            });
         }
+
+        window.startMultiGame = async function() {
+            const docSnap = await getDoc(doc(db, PATH_ROOMS, currentRoomId));
+            const cards = await generateDeck(docSnap.data().unit || 'default');
+            await updateDoc(doc(db, PATH_ROOMS, currentRoomId), { status: 'playing', cards, currentTurnIndex: 0 });
+        };
 
         function syncMultiplayerBoard(room) {
             const currentTurnUid = room.turnOrder[room.currentTurnIndex];
             isMyTurn = (currentTurnUid === currentUser.uid);
-
-            const turnPlayerName = maskName(room.players[currentTurnUid].name);
+            
             const statusEl = document.getElementById('gameStatusText');
-            if(isMyTurn) {
-                statusEl.innerHTML = `<span class="text-green-600 font-bold">내 차례입니다! 카드를 선택하세요.</span>`;
-            } else {
-                statusEl.innerHTML = `<span class="text-gray-500">${turnPlayerName}의 차례를 기다리는 중...</span>`;
-            }
+            statusEl.innerHTML = isMyTurn ? `<span class="text-green-600 font-bold">내 차례입니다! 카드를 선택하세요.</span>` : `<span class="text-gray-500">${maskName(room.players[currentTurnUid].name)}의 차례...</span>`;
 
-            const sb = document.getElementById('gameScoreBoard');
-            sb.innerHTML = room.turnOrder.map(uid => {
+            document.getElementById('gameScoreBoard').innerHTML = room.turnOrder.map(uid => {
                 let p = room.players[uid];
-                let isTurnClass = uid === currentTurnUid ? 'ring-4 ring-green-400 scale-105' : 'opacity-70';
-                let colorClass = uid === currentUser.uid ? 'bg-indigo-100 text-indigo-800' : 'bg-gray-100 text-gray-800';
-                return `<div class="${colorClass} px-3 py-2 rounded-xl font-bold transition transform ${isTurnClass} shadow">
-                    ${maskName(p.name)}: ${p.score}
-                </div>`;
+                let isTurn = uid === currentTurnUid ? 'ring-2 ring-green-400' : 'opacity-70';
+                let color = uid === currentUser.uid ? 'bg-indigo-100 text-indigo-800' : 'bg-gray-100 text-gray-800';
+                return `<div class="${color} px-2 py-1 sm:px-3 sm:py-2 rounded-lg font-bold text-sm sm:text-base ${isTurn}">${maskName(p.name)}: ${p.score}</div>`;
             }).join('');
 
             renderBoard(room.cards, handleMultiplayerCardClick);
-            
             let flipped = room.cards.map((c, i) => ({...c, index: i})).filter(c => c.isFlipped && !c.isMatched);
-            
             if(flipped.length === 2 && isMyTurn && !isProcessingFlipped) {
-                isProcessingFlipped = true;
-                evaluateMultiplayerMatch(room, flipped[0].index, flipped[1].index);
+                isProcessingFlipped = true; evaluateMultiplayerMatch(room, flipped[0].index, flipped[1].index);
             }
         }
 
         async function handleMultiplayerCardClick(index) {
             if(!isMyTurn || isProcessingFlipped) return;
-            
             const roomRef = doc(db, PATH_ROOMS, currentRoomId);
-            try {
-                const docSnap = await getDoc(roomRef);
-                let room = docSnap.data();
-                
-                let flipCount = room.cards.filter(c => c.isFlipped && !c.isMatched).length;
-                if(flipCount < 2 && !room.cards[index].isFlipped && !room.cards[index].isMatched) {
-                    room.cards[index].isFlipped = true;
-                    await updateDoc(roomRef, { cards: room.cards });
-                }
-            } catch(e) {}
+            const docSnap = await getDoc(roomRef);
+            let room = docSnap.data();
+            if(room.cards.filter(c => c.isFlipped && !c.isMatched).length < 2 && !room.cards[index].isFlipped && !room.cards[index].isMatched) {
+                room.cards[index].isFlipped = true; await updateDoc(roomRef, { cards: room.cards });
+            }
         }
 
         async function evaluateMultiplayerMatch(room, idx1, idx2) {
             setTimeout(async () => {
-                let updatedCards = [...room.cards];
-                let updatedPlayers = {...room.players};
-                let nextTurnIndex = room.currentTurnIndex;
-                let isMatch = updatedCards[idx1].pairId === updatedCards[idx2].pairId;
-
-                if(isMatch) {
-                    updatedCards[idx1].isMatched = true;
-                    updatedCards[idx2].isMatched = true;
-                    const matcherName = maskName(room.players[currentUser.uid].name);
-                    updatedCards[idx1].matchedBy = matcherName;
-                    updatedCards[idx2].matchedBy = matcherName;
+                let updatedCards = [...room.cards], updatedPlayers = {...room.players}, nextTurnIndex = room.currentTurnIndex;
+                if(updatedCards[idx1].pairId === updatedCards[idx2].pairId) {
+                    updatedCards[idx1].isMatched = true; updatedCards[idx2].isMatched = true;
+                    updatedCards[idx1].matchedBy = maskName(room.players[currentUser.uid].name);
+                    updatedCards[idx2].matchedBy = maskName(room.players[currentUser.uid].name);
                     updatedPlayers[currentUser.uid].score += 10;
                 } else {
-                    updatedCards[idx1].isFlipped = false;
-                    updatedCards[idx2].isFlipped = false;
+                    updatedCards[idx1].isFlipped = false; updatedCards[idx2].isFlipped = false;
                     updatedPlayers[currentUser.uid].score = Math.max(0, updatedPlayers[currentUser.uid].score - 2);
                     nextTurnIndex = (room.currentTurnIndex + 1) % room.turnOrder.length;
                 }
-
-                let allMatched = updatedCards.every(c => c.isMatched);
-                let status = allMatched ? 'finished' : 'playing';
-
-                const roomRef = doc(db, PATH_ROOMS, currentRoomId);
-                try {
-                    await updateDoc(roomRef, {
-                        cards: updatedCards,
-                        players: updatedPlayers,
-                        currentTurnIndex: nextTurnIndex,
-                        status: status
-                    });
-                } catch(e){}
-                
+                let status = updatedCards.every(c => c.isMatched) ? 'finished' : 'playing';
+                try { await updateDoc(doc(db, PATH_ROOMS, currentRoomId), { cards: updatedCards, players: updatedPlayers, currentTurnIndex: nextTurnIndex, status }); } catch(e){}
                 isProcessingFlipped = false;
-            }, 1200); 
+            }, 1200);
         }
 
         async function handleMultiplayerFinish(room) {
-            let maxScore = -1;
-            let winners = [];
+            let maxScore = -1, winners = [];
             room.turnOrder.forEach(uid => {
                 let s = room.players[uid].score;
                 if(s > maxScore) { maxScore = s; winners = [room.players[uid].name]; }
-                else if (s === maxScore) { winners.push(room.players[uid].name); }
+                else if (s === maxScore) winners.push(room.players[uid].name);
             });
-
             if(room.players[currentUser.uid].score > currentUser.score) {
-                try {
-                    await updateDoc(doc(db, PATH_USERS, currentUser.uid), { score: room.players[currentUser.uid].score });
-                    currentUser.score = room.players[currentUser.uid].score;
-                } catch(e){}
+                try { await updateDoc(doc(db, PATH_USERS, currentUser.uid), { score: room.players[currentUser.uid].score }); currentUser.score = room.players[currentUser.uid].score; } catch(e){}
             }
-
-            showModal("게임 종료!", `우승자: ${winners.map(maskName).join(', ')}\n내 점수: ${room.players[currentUser.uid].score}점`, () => {
-                leaveRoom();
-            });
+            showModal("게임 종료!", `우승자: ${winners.map(maskName).join(', ')}\n내 점수: ${room.players[currentUser.uid].score}점`, () => leaveRoom());
         }
 
-        window.confirmExitGame = function() {
-            showModal("게임 포기", "정말 게임을 그만두시겠습니까?", () => {
-                if(currentRoomId) leaveRoom();
-                else goToMenu();
-            }, true);
+        window.leaveRoom = async function() {
+            if(currentRoomId && unsubscribeRoom) {
+                unsubscribeRoom();
+                try {
+                    const roomRef = doc(db, PATH_ROOMS, currentRoomId);
+                    const d = await getDoc(roomRef);
+                    if(d.exists()) {
+                        const r = d.data();
+                        if(r.host === currentUser.uid) await deleteDoc(roomRef);
+                        else {
+                            let upP = {...r.players}; delete upP[currentUser.uid];
+                            let upT = r.turnOrder.filter(uid => uid !== currentUser.uid);
+                            await updateDoc(roomRef, { players: upP, turnOrder: upT });
+                        }
+                    }
+                } catch(e){}
+            }
+            currentRoomId = null; goToMenu();
         };
 
+        window.confirmExitGame = function() {
+            showModal("게임 포기", "정말 게임을 그만두시겠습니까?", () => { if(currentRoomId) leaveRoom(); else goToMenu(); }, true);
+        };
     </script>
 </body>
 </html>
