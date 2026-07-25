@@ -134,12 +134,10 @@
                         <input type="text" id="loginName" class="w-full border-2 border-gray-200 rounded-xl p-3 focus:border-green-400 focus:outline-none transition" placeholder="예: 홍길동">
                     </div>
                     
-                    <div class="flex items-center gap-2 mt-4 pt-4 border-t-2 border-dashed border-gray-100">
-                        <input type="checkbox" id="loginIsTeacher" class="w-5 h-5 text-green-500 rounded focus:ring-green-400">
-                        <label for="loginIsTeacher" class="text-gray-600 select-none">저는 선생님입니다</label>
+                    <div class="flex gap-3 mt-6">
+                        <button onclick="handleLogin('student')" class="flex-1 bg-green-500 hover:bg-green-600 text-white font-bold py-4 rounded-xl shadow-lg text-lg transition transform hover:-translate-y-1 active:scale-95">🎓 학생 입학</button>
+                        <button onclick="handleLogin('teacher')" class="flex-1 bg-orange-400 hover:bg-orange-500 text-white font-bold py-4 rounded-xl shadow-lg text-lg transition transform hover:-translate-y-1 active:scale-95">👩‍🏫 교사 로그인</button>
                     </div>
-
-                    <button onclick="handleLogin()" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-4 rounded-xl shadow-lg mt-6 text-xl transition transform hover:scale-[1.02] active:scale-95">시작하기!</button>
                 </div>
             </div>
         </section>
@@ -464,31 +462,40 @@
         });
 
         // --- Login Logic ---
-        window.handleLogin = async function() {
+        window.handleLogin = async function(role = 'student') {
             if(!auth || !auth.currentUser) {
                 showModal("오류", "로그인 시스템이 준비되지 않았습니다. 잠시 후 다시 시도해주세요.");
                 return;
             }
 
             const school = document.getElementById('loginSchool').value.trim();
-            const grade = document.getElementById('loginGrade').value;
-            const cls = document.getElementById('loginClass').value;
-            const num = document.getElementById('loginNum').value.trim();
             const name = document.getElementById('loginName').value.trim();
-            const isTeacher = document.getElementById('loginIsTeacher').checked;
+            
+            let grade = 0, cls = 0, num = 0;
 
-            if(!school || !grade || !cls || !num || !name) {
-                showModal("알림", "모든 정보를 입력 및 선택해주세요!");
-                return;
+            if (role === 'student') {
+                grade = document.getElementById('loginGrade').value;
+                cls = document.getElementById('loginClass').value;
+                num = document.getElementById('loginNum').value.trim();
+
+                if(!school || !grade || !cls || !num || !name) {
+                    showModal("알림", "모든 정보를 입력 및 선택해주세요! (학생은 학년, 반, 번호 필수)");
+                    return;
+                }
+            } else {
+                if(!school || !name) {
+                    showModal("알림", "학교 이름과 선생님 이름을 입력해주세요!");
+                    return;
+                }
             }
             
             const userData = {
                 school,
-                grade: parseInt(grade),
-                class: parseInt(cls),
-                number: parseInt(num),
+                grade: role === 'student' ? parseInt(grade) : 0,
+                class: role === 'student' ? parseInt(cls) : 0,
+                number: role === 'student' ? parseInt(num) : 0,
                 name,
-                role: isTeacher ? 'teacher' : 'student',
+                role: role,
                 score: 0, 
                 lastLogin: new Date().toISOString()
             };
@@ -503,7 +510,8 @@
                 await setDoc(userRef, userData);
                 currentUser = { uid: auth.currentUser.uid, ...userData };
                 
-                document.getElementById('userInfoDisplay').innerText = `${grade}-${cls} ${name} ${isTeacher ? '(선생님)' : ''}`;
+                let displayInfo = role === 'teacher' ? `${school} ${name} 선생님` : `${grade}-${cls} ${name}`;
+                document.getElementById('userInfoDisplay').innerText = displayInfo;
                 document.getElementById('userInfoDisplay').classList.remove('hidden');
                 
                 goToMenu();
@@ -810,8 +818,8 @@
             let deck = [];
             baseWords.forEach((w, index) => {
                 let pairId = `pair_${index}`;
-                deck.push({ id: `w_${index}`, pairId, type: 'word', content: w.text, isFlipped: false, isMatched: false });
-                deck.push({ id: `i_${index}`, pairId, type: 'img', content: w.img, isFlipped: false, isMatched: false });
+                deck.push({ id: `w_${index}`, pairId, type: 'word', content: w.text, isFlipped: false, isMatched: false, matchedBy: null });
+                deck.push({ id: `i_${index}`, pairId, type: 'img', content: w.img, isFlipped: false, isMatched: false, matchedBy: null });
             });
 
             deck.sort(() => 0.5 - Math.random());
@@ -827,15 +835,17 @@
                 cardDiv.className = `perspective aspect-square w-full cursor-pointer`;
                 
                 const innerClass = card.isFlipped || card.isMatched ? 'rotate-y-180' : '';
-                const matchedClass = card.isMatched ? 'opacity-50 scale-95' : '';
+                const matchedClass = card.isMatched ? 'scale-95 z-0' : 'z-10 hover:scale-105 transition-transform';
+                const borderColor = card.isMatched ? 'border-yellow-400' : 'border-green-200';
 
                 cardDiv.innerHTML = `
                     <div class="relative w-full h-full transform-style-3d ${innerClass} ${matchedClass}" id="card-inner-${index}">
                         <div class="absolute w-full h-full backface-hidden bg-gradient-to-br from-green-400 to-green-600 rounded-2xl shadow-md border-4 border-white flex items-center justify-center">
                             <span class="text-white text-3xl font-black opacity-30">?</span>
                         </div>
-                        <div class="absolute w-full h-full backface-hidden card-front bg-white rounded-2xl shadow-md border-4 border-green-200 flex items-center justify-center p-2 text-center break-words">
-                            <span class="${card.type === 'img' ? 'text-4xl sm:text-5xl' : 'text-xl sm:text-2xl font-bold text-gray-800'}">${card.content}</span>
+                        <div class="absolute w-full h-full backface-hidden card-front bg-white rounded-2xl shadow-md border-4 ${borderColor} flex flex-col items-center justify-center p-2 text-center break-words overflow-hidden">
+                            <span class="${card.type === 'img' ? 'text-4xl sm:text-5xl' : 'text-xl sm:text-2xl font-bold text-gray-800'} ${card.isMatched ? 'mb-4' : ''}">${card.content}</span>
+                            ${card.isMatched && card.matchedBy ? `<div class="absolute bottom-0 left-0 w-full bg-yellow-400 text-yellow-900 text-xs sm:text-sm py-1 font-bold text-center truncate px-1 shadow-inner">${card.matchedBy}</div>` : ''}
                         </div>
                     </div>
                 `;
@@ -891,6 +901,8 @@
                     setTimeout(() => {
                         gameCards[idx1].isMatched = true;
                         gameCards[idx2].isMatched = true;
+                        gameCards[idx1].matchedBy = currentUser ? maskName(currentUser.name) : "나";
+                        gameCards[idx2].matchedBy = currentUser ? maskName(currentUser.name) : "나";
                         flippedIndices = [];
                         updateSinglePlayerScoreBoard();
                         renderBoard(gameCards, handleSinglePlayerCardClick);
@@ -987,6 +999,9 @@
                 if(isMatch) {
                     updatedCards[idx1].isMatched = true;
                     updatedCards[idx2].isMatched = true;
+                    const matcherName = maskName(room.players[currentUser.uid].name);
+                    updatedCards[idx1].matchedBy = matcherName;
+                    updatedCards[idx2].matchedBy = matcherName;
                     updatedPlayers[currentUser.uid].score += 10;
                 } else {
                     updatedCards[idx1].isFlipped = false;
