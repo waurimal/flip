@@ -285,8 +285,22 @@
         </div>
     </div>
 
+    <!-- 선생님 비밀번호 모달 -->
+    <div id="passwordModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+        <div class="bg-white p-6 rounded-2xl shadow-2xl max-w-sm w-full mx-4 text-center">
+            <h3 class="text-2xl font-bold text-gray-800 mb-2">선생님 로그인</h3>
+            <p class="text-sm text-gray-500 mb-6">초기 비밀번호는 <strong class="text-red-500">0000</strong>입니다.</p>
+            <input type="password" id="teacherPasswordInput" class="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-green-500 outline-none mb-6 text-center text-2xl tracking-widest" placeholder="비밀번호 입력">
+            <div class="flex gap-3">
+                <button onclick="closePasswordModal()" class="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-3 rounded-xl">취소</button>
+                <button onclick="confirmTeacherLogin()" class="flex-1 bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-xl">확인</button>
+            </div>
+        </div>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
         import { 
             getFirestore, collection, doc, setDoc, getDoc, addDoc, 
             getDocs, updateDoc, deleteDoc, query, where, onSnapshot, orderBy, limit 
@@ -307,6 +321,12 @@
         const app = initializeApp(firebaseConfig);
         const analytics = getAnalytics(app);
         const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        // 익명 로그인으로 Firebase 권한 문제(게임 안넘어감) 해결
+        signInAnonymously(auth).catch(error => {
+            console.error("Firebase Auth Error:", error);
+        });
 
         // 전역 상태
         let currentUser = null;
@@ -506,28 +526,28 @@
         }
 
         window.loadWordsForTeacher = async function() {
-            const unitId = document.getElementById('teacherUnitSelect').value;
-            const wordArea = document.getElementById('wordManagementArea');
-            if(!unitId) {
-                wordArea.classList.add('hidden');
-                return;
-            }
-            wordArea.classList.remove('hidden');
-            
-            try {
-                const q = query(collection(db, `schools/${currentUser.school}/words`), where("unitId", "==", unitId));
-                const querySnapshot = await getDocs(q);
-                const listDiv = document.getElementById('wordList');
-                listDiv.innerHTML = '';
-                let count = 0;
-                querySnapshot.forEach((docSnap) => {
-                    count++;
-                    const data = docSnap.data();
-                    listDiv.innerHTML += `
-                        <div class="flex justify-between items-center p-2 bg-white rounded border border-gray-200">
-                            <span class="font-bold text-gray-700">${data.word}</span>
-                            <span class="text-blue-600">${data.meaning}</span>
-                            <button onclick="deleteWord('${docSnap.id}')" class="text-red-500 text-sm hover:underline">삭제</button>
+                    <div class="space-y-4">
+                        <h3 class="text-xl font-bold text-purple-600 border-b pb-2">⚙️ 게임 설정</h3>
+                        <div class="bg-purple-50 p-4 rounded-xl border border-purple-100 flex justify-between items-center">
+                            <span>한 게임당 사용할 카드 짝 개수:</span>
+                            <select id="settingPairCount" onchange="saveSettings()" class="p-2 rounded-lg border-2 border-purple-200 font-bold text-purple-700 outline-none">
+                                <option value="4">4쌍 (8장)</option>
+                                <option value="6">6쌍 (12장)</option>
+                                <option value="8">8쌍 (16장)</option>
+                                <option value="10">10쌍 (20장)</option>
+                                <option value="12">12쌍 (24장)</option>
+                            </select>
+                        </div>
+
+                        <h3 class="text-xl font-bold text-red-600 border-b pb-2 mt-6">🔒 비밀번호 변경</h3>
+                        <div class="flex gap-2 bg-red-50 p-4 rounded-xl border border-red-100">
+                            <input type="password" id="newTeacherPassword" class="flex-1 p-2 border-2 border-red-200 rounded-lg outline-none focus:border-red-400" placeholder="새 비밀번호 입력">
+                            <button onclick="changeTeacherPassword()" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-bold">변경</button>
+                        </div>
+
+                        <h3 class="text-xl font-bold text-orange-600 border-b pb-2 mt-6">👥 학생 목록</h3>
+                        <div class="bg-orange-50 p-4 rounded-xl border border-orange-100 h-48 overflow-y-auto" id="studentList">
+                            <!-- 학생 목록 -->
                         </div>
                     `;
                 });
@@ -600,117 +620,117 @@
         }
 
         // -------------------------
-        // 게임 준비 (단원 선택)
+        // 로그인 및 초기화
         // -------------------------
-        window.openUnitSelect = function(action) {
-            if(units.length === 0) {
-                return showAlert('알림', '선생님이 등록하신 단원이 아직 없습니다.', '😢');
+        let tempSchoolName = '';
+        let tempTeacherName = '';
+
+        window.login = async function(isTeacher) {
+            const schoolName = document.getElementById('schoolName').value.trim();
+            const playerName = document.getElementById('playerName').value.trim();
+            
+            if (!schoolName) return showAlert('입력 오류', '학교 이름을 정확히 입력해주세요.', '🏫');
+            if (!playerName) return showAlert('입력 오류', '이름을 입력해주세요.', '👤');
+
+            let grade = "", classNum = "", studentNum = "";
+            
+            if (!isTeacher) {
+                grade = document.getElementById('grade').value;
+                classNum = document.getElementById('classNum').value;
+                studentNum = document.getElementById('studentNum').value.trim();
+                
+                if (!grade || !classNum || !studentNum) {
+                    return showAlert('입력 오류', '학년, 반, 번호를 모두 선택/입력해주세요.', '📋');
+                }
             }
-            pendingAction = action;
-            document.getElementById('modalUnitSelect').value = '';
-            document.getElementById('unitModal').classList.remove('hidden');
-        }
 
-        window.closeUnitModal = function() {
-            document.getElementById('unitModal').classList.add('hidden');
-            pendingAction = null;
-        }
-
-        window.confirmUnitSelection = async function() {
-            const unitId = document.getElementById('modalUnitSelect').value;
-            if(!unitId) return showAlert('알림', '단원을 선택해주세요.', '⚠️');
-            
-            closeUnitModal();
-            
-            if(pendingAction === 'single') {
-                startSingleGame(unitId);
-            } else if (pendingAction === 'host') {
-                createRoom(unitId);
+            if (isTeacher) {
+                // 선생님인 경우 바로 로그인하지 않고 비밀번호 모달 띄우기
+                tempSchoolName = schoolName;
+                tempTeacherName = playerName;
+                document.getElementById('teacherPasswordInput').value = '';
+                document.getElementById('passwordModal').classList.remove('hidden');
+                return;
             }
-        }
 
-        async function fetchWordsForGame(unitId, pairCount) {
-            const q = query(collection(db, `schools/${currentUser.school}/words`), where("unitId", "==", unitId));
-            const querySnapshot = await getDocs(q);
-            let allWords = [];
-            querySnapshot.forEach(doc => allWords.push(doc.data()));
-            
-            if(allWords.length < pairCount) {
-                showAlert('단어 부족', `해당 단원에 단어가 부족합니다. (최소 ${pairCount}개 필요, 현재 ${allWords.length}개)`, '⚠️');
-                return null;
-            }
-            
-            // 랜덤으로 섞어서 필요한 만큼 추출
-            allWords = shuffle(allWords).slice(0, pairCount);
-            
-            let gameCards = [];
-            allWords.forEach((item, index) => {
-                const pairId = `pair_${index}`;
-                gameCards.push({ id: `word_${index}`, pairId: pairId, type: 'word', content: item.word, isFlipped: false, isMatched: false, matchedBy: null });
-                gameCards.push({ id: `mean_${index}`, pairId: pairId, type: 'meaning', content: item.meaning, isFlipped: false, isMatched: false, matchedBy: null });
-            });
-            
-            return shuffle(gameCards);
-        }
-
-        // -------------------------
-        // 1인용 게임 로직
-        // -------------------------
-        async function startSingleGame(unitId) {
-            const pairCount = gameSettings.pairCount || 6;
-            const newCards = await fetchWordsForGame(unitId, pairCount);
-            if(!newCards) return;
-
-            currentGameMode = 'single';
-            cards = newCards;
-            matchedPairs = 0;
-            flippedIndices = [];
-            isGameLocked = false;
-            
-            document.getElementById('gameModeDisplay').innerText = "혼자 하기 (연습 모드)";
-            document.getElementById('multiScoreBoard').classList.add('hidden');
-            document.getElementById('pairsLeftDisplay').innerText = pairCount;
-            
-            showScreen('gameScreen');
-            renderBoard();
-            startTimer();
-        }
-
-        // -------------------------
-        // 멀티플레이 방 관리 로직
-        // -------------------------
-        async function createRoom(unitId) {
-            const pairCount = gameSettings.pairCount || 6;
-            const newCards = await fetchWordsForGame(unitId, pairCount);
-            if(!newCards) return;
-
-            const roomCode = generateRoomCode();
-            currentRoomId = roomCode;
-            isHost = true;
-            
-            const roomData = {
-                code: roomCode,
-                host: currentUser.name,
-                unitId: unitId,
-                status: 'waiting',
-                players: [{ name: currentUser.name, uid: currentUser.uid, score: 0 }],
-                cards: newCards,
-                createdAt: Date.now(),
-                pairsLeft: pairCount
+            currentUser = {
+                school: schoolName,
+                name: playerName,
+                isTeacher: false,
+                grade: grade,
+                classNum: classNum,
+                studentNum: studentNum,
+                uid: `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
             };
-            
+
+            // 사용자 정보 화면 표시
+            const infoDiv = document.getElementById('userInfoDisplay');
+            infoDiv.classList.remove('hidden');
+            infoDiv.innerHTML = `🏫 ${schoolName} | 🎓 ${grade} ${classNum} ${playerName}`;
+
+            // 학교별 설정 로드
+            await loadSchoolSettings();
+            await loadUnits();
+
+            // 학생 정보 DB 저장
             try {
-                await setDoc(doc(db, `schools/${currentUser.school}/rooms`, roomCode), roomData);
-                joinRoomLobby(roomCode);
-            } catch(e) { console.error(e); showAlert('오류', '방 생성 실패', '❌'); }
+                const userRef = doc(db, `schools/${schoolName}/users`, currentUser.uid);
+                await setDoc(userRef, currentUser);
+            } catch (e) {
+                console.error("Error saving user: ", e);
+            }
+            showScreen('studentScreen');
+            loadHallOfFame();
         }
 
-        window.joinRoom = async function() {
-            const code = document.getElementById('joinRoomCode').value.trim();
-            if(code.length !== 4) return showAlert('알림', '4자리 방 코드를 입력하세요.', '🔑');
-            
+        window.closePasswordModal = function() {
+            document.getElementById('passwordModal').classList.add('hidden');
+        }
+
+        window.confirmTeacherLogin = async function() {
+            const inputPw = document.getElementById('teacherPasswordInput').value;
+            if(!inputPw) return showAlert('알림', '비밀번호를 입력해주세요.', '🔑');
+
             try {
-                const roomRef = doc(db, `schools/${currentUser.school}/rooms`, code);
+                const authRef = doc(db, `schools/${tempSchoolName}/settings`, 'auth');
+                const docSnap = await getDoc(authRef);
+
+                let realPw = '0000'; // 기본 비밀번호 설정
+                if (docSnap.exists() && docSnap.data().password) {
+                    realPw = docSnap.data().password;
+                } else {
+                    // DB에 설정된 비번이 없으면 최초 접속이므로 기본 비번(0000)을 생성해 둠
+                    await setDoc(authRef, { password: '0000' }, { merge: true });
+                }
+
+                if (inputPw === realPw) {
+                    closePasswordModal();
+                    
+                    currentUser = {
+                        school: tempSchoolName,
+                        name: tempTeacherName,
+                        isTeacher: true,
+                        uid: `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+                    };
+
+                    const infoDiv = document.getElementById('userInfoDisplay');
+                    infoDiv.classList.remove('hidden');
+                    infoDiv.innerHTML = `🏫 ${tempSchoolName} | 👨‍🏫 선생님`;
+
+                    await loadSchoolSettings();
+                    await loadUnits();
+                    showScreen('teacherScreen');
+                    loadStudentsForTeacher();
+                } else {
+                    showAlert('오류', '비밀번호가 틀렸습니다.', '❌');
+                }
+            } catch(e) { 
+                console.error(e); 
+                showAlert('오류', '로그인 처리 중 문제가 발생했습니다.', '❌'); 
+            }
+        }
+
+        window.logout = function() {
                 const docSnap = await getDoc(roomRef);
                 
                 if (!docSnap.exists()) return showAlert('오류', '방을 찾을 수 없습니다.', '❌');
@@ -837,24 +857,24 @@
         }
 
         // -------------------------
-        // 공통 게임 UI 렌더링
+        // 교사 기능 (단원 & 단어 관리)
         // -------------------------
-        function renderBoard() {
-            const board = document.getElementById('gameBoard');
-            board.innerHTML = '';
-            
-            // 카드 개수에 따른 그리드 설정
-            const total = cards.length;
-            if(total <= 8) board.className = 'grid gap-3 sm:gap-4 mx-auto max-w-2xl grid-cols-4'; // 4쌍
-            else if(total <= 12) board.className = 'grid gap-3 sm:gap-4 mx-auto max-w-3xl grid-cols-4 md:grid-cols-4'; // 6쌍
-            else if(total <= 16) board.className = 'grid gap-3 sm:gap-4 mx-auto max-w-4xl grid-cols-4 md:grid-cols-4'; // 8쌍
-            else board.className = 'grid gap-2 sm:gap-3 mx-auto max-w-5xl grid-cols-4 md:grid-cols-5'; // 10쌍, 12쌍
-            
-            cards.forEach((card, index) => {
-                const cardDiv = document.createElement('div');
-                const isFlipping = card.isFlipped || card.isMatched;
-                // 뒤집히지 않은 카드에만 마우스 오버 효과 (클릭 시 크기 커짐 방지)
-                const interactClass = !isFlipping ? 'cursor-pointer hover:scale-105' : '';
+        window.changeTeacherPassword = async function() {
+            if(!currentUser?.isTeacher) return;
+            const newPw = document.getElementById('newTeacherPassword').value.trim();
+            if(!newPw) return showAlert('알림', '새 비밀번호를 입력하세요.', '⚠️');
+
+            try {
+                await setDoc(doc(db, `schools/${currentUser.school}/settings`, 'auth'), { password: newPw }, { merge: true });
+                document.getElementById('newTeacherPassword').value = '';
+                showAlert('성공', '비밀번호가 성공적으로 변경되었습니다.', '✅');
+            } catch (e) { 
+                console.error(e);
+                showAlert('오류', '비밀번호 변경 실패', '❌'); 
+            }
+        }
+
+        window.saveSettings = async function() {
                 
                 cardDiv.className = `perspective aspect-[4/3] sm:aspect-[4/3] w-full max-h-32 sm:max-h-40`;
                 
