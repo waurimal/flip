@@ -299,7 +299,7 @@
                 <ul id="waitingPlayersList" class="space-y-3 mb-8"></ul>
 
                 <button id="btnStartMultiGame" onclick="startMultiGame()" class="w-full bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-4 rounded-xl shadow-lg text-xl hidden">게임 시작!</button>
-                <p id="waitingMessage" class="text-gray-500 text-sm">호스트가 게임을 시작할 때까지 기다려주세요...</p>
+                <p id="waitingMessage" class="text-gray-500 text-sm">호스트가 게임 시작할 때까지 기다려주세요...</p>
                 <button onclick="leaveRoom()" class="mt-4 text-red-400 underline text-sm">방 나가기</button>
             </div>
         </section>
@@ -795,7 +795,7 @@
                         flippedIndices = []; updateSinglePlayerScoreBoard();
                         renderBoard(gameCards, handleSinglePlayerCardClick);
                         isProcessingFlipped = false;
-                    }, 1200);
+                    }, 2000); // 1200ms에서 2000ms(2초)로 변경
                 }
             }
         }
@@ -914,9 +914,13 @@
         }
 
         async function evaluateMultiplayerMatch(room, idx1, idx2) {
+            // 맞혔을 때는 0.8초(800ms) 대기, 틀렸을 때는 2초(2000ms) 대기
+            const isMatch = room.cards[idx1].pairId === room.cards[idx2].pairId;
+            const delayTime = isMatch ? 800 : 2000;
+
             setTimeout(async () => {
                 let updatedCards = [...room.cards], updatedPlayers = {...room.players}, nextTurnIndex = room.currentTurnIndex;
-                if(updatedCards[idx1].pairId === updatedCards[idx2].pairId) {
+                if(isMatch) {
                     updatedCards[idx1].isMatched = true; updatedCards[idx2].isMatched = true;
                     updatedCards[idx1].matchedBy = maskName(room.players[currentUser.uid].name);
                     updatedCards[idx2].matchedBy = maskName(room.players[currentUser.uid].name);
@@ -929,7 +933,7 @@
                 let status = updatedCards.every(c => c.isMatched) ? 'finished' : 'playing';
                 try { await updateDoc(doc(db, PATH_ROOMS, currentRoomId), { cards: updatedCards, players: updatedPlayers, currentTurnIndex: nextTurnIndex, status }); } catch(e){}
                 isProcessingFlipped = false;
-            }, 1200);
+            }, delayTime);
         }
 
         async function handleMultiplayerFinish(room) {
