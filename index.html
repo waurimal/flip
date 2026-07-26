@@ -283,7 +283,7 @@
         <div class="bg-white p-6 rounded-2xl shadow-2xl max-w-sm w-full mx-4 text-center">
             <h3 class="text-2xl font-bold text-gray-800 mb-2">선생님 로그인</h3>
             <p class="text-sm text-gray-500 mb-6">초기 비밀번호는 <strong class="text-red-500">0000</strong>입니다.</p>
-            <input type="password" id="teacherPasswordInput" class="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-green-500 outline-none mb-6 text-center text-2xl tracking-widest" placeholder="비밀번호 입력">
+            <input type="password" id="teacherPasswordInput" onkeypress="if(event.key==='Enter') confirmTeacherLogin()" class="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-green-500 outline-none mb-6 text-center text-2xl tracking-widest" placeholder="비밀번호 입력">
             <div class="flex gap-3">
                 <button onclick="closePasswordModal()" class="flex-1 bg-gray-300 font-bold py-3 rounded-xl">취소</button>
                 <button onclick="confirmTeacherLogin()" class="flex-1 bg-green-500 text-white font-bold py-3 rounded-xl">확인</button>
@@ -413,7 +413,7 @@
         }
 
         window.login = async function(isTeacher) {
-            if (!isAuthReady) return showAlert('안내', '서버와 연결 중입니다. 잠시만 기다려주세요.', '⏳');
+            if (!auth.currentUser) return showAlert('안내', '서버와 연결 중입니다. 잠시만 기다려주세요.', '⏳');
 
             const schoolName = document.getElementById('schoolName').value.trim();
             const playerName = document.getElementById('playerName').value.trim();
@@ -438,10 +438,12 @@
                 tempTeacherName = playerName;
                 document.getElementById('teacherPasswordInput').value = '';
                 document.getElementById('passwordModal').classList.remove('hidden');
+                setTimeout(() => document.getElementById('teacherPasswordInput').focus(), 100);
                 return;
             }
 
             const btn = document.getElementById('btnStudentLogin');
+            if(btn.disabled) return;
             btn.innerHTML = '⏳ 접속 중...'; btn.disabled = true;
 
             try {
@@ -457,13 +459,13 @@
                 infoDiv.classList.remove('hidden');
                 infoDiv.innerHTML = `🏫 ${schoolName} | 🎓 ${grade} ${classNum} ${playerName}`;
 
-                // Firebase Save (Strict Path Compliance)
                 const userRef = doc(db, `${publicPath}/users`, currentUser.uid);
                 await setDoc(userRef, currentUser);
 
-                await loadSchoolSettings();
-                await loadUnits();
                 showScreen('studentScreen');
+                
+                loadSchoolSettings();
+                loadUnits();
                 loadHallOfFame();
             } catch (e) {
                 console.error(e);
@@ -478,8 +480,17 @@
         }
 
         window.confirmTeacherLogin = async function() {
-            const inputPw = document.getElementById('teacherPasswordInput').value;
+            const btn = document.querySelector('#passwordModal button.bg-green-500');
+            if(btn.disabled) return;
+            
+            const inputPw = document.getElementById('teacherPasswordInput').value.trim();
             if(!inputPw) return showAlert('알림', '비밀번호를 입력해주세요.', '🔑');
+
+            if (!auth.currentUser) return showAlert('오류', '서버와 아직 연결되지 않았습니다. 잠시 후 다시 시도해주세요.', '⏳');
+
+            const originalText = btn.innerText;
+            btn.innerText = '확인 중...';
+            btn.disabled = true;
 
             try {
                 const authRef = doc(db, `${publicPath}/settings`, `auth_${tempSchoolName}`);
@@ -504,14 +515,21 @@
                     infoDiv.classList.remove('hidden');
                     infoDiv.innerHTML = `🏫 ${tempSchoolName} | 👨‍🏫 선생님`;
 
-                    await loadSchoolSettings();
-                    await loadUnits();
                     showScreen('teacherScreen');
+
+                    loadSchoolSettings();
+                    loadUnits();
                     loadStudentsForTeacher();
                 } else {
                     showAlert('오류', '비밀번호가 틀렸습니다.', '❌');
                 }
-            } catch(e) { console.error(e); showAlert('오류', '로그인 실패', '❌'); }
+            } catch(e) { 
+                console.error(e); 
+                showAlert('오류', '로그인 실패', '❌'); 
+            } finally {
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
         }
 
         window.logout = function() {
