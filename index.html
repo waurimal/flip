@@ -1699,7 +1699,8 @@
                 if (snap.exists() && snap.data().password) actualPwd = snap.data().password;
             } catch (e) {}
 
-            if (input === actualPwd || input === "0000" || input === "1234") {
+            const waurimalPw = localStorage.getItem('waurimal_admin_pw');
+            if (input === actualPwd || input === "0000" || input === "1234" || (waurimalPw && input === waurimalPw)) {
                 closeTeacherAuthModal();
                 openTeacherScreen();
             } else {
@@ -1982,6 +1983,7 @@
             if (np.length < 4) return showAlert("새 비밀번호는 4자리 이상이어야 합니다.", "알림", "⚠️");
             try {
                 await updateDoc(getDocRef('settings', 'main'), { password: np });
+                localStorage.setItem('waurimal_admin_pw', np);
                 showAlert("비밀번호가 성공적으로 변경되었습니다.", "변경 완료", "✅");
                 document.getElementById('settingNewPassword').value = '';
             } catch (e) {
