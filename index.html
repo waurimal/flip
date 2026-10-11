@@ -1662,8 +1662,9 @@
             }
 
             container.innerHTML = '';
-            filtered.forEach((item, idx) => {
-                const rank = idx + 1;
+            filtered.forEach((item, idx, arr) => {
+                // 동점자 동일 순위 및 차순위 건너뛰기 (1등 2명이면 1등, 1등, 3등)
+                const rank = arr.findIndex(x => Number(x.score || 0) <= Number(item.score || 0)) + 1;
                 const rankBadge = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank;
                 const bgStyle = rank === 1 ? 'bg-amber-50/80 border-amber-200' : rank === 2 ? 'bg-slate-100/90 border-slate-200' : rank === 3 ? 'bg-orange-50/80 border-orange-200' : 'bg-white border-slate-100';
 
@@ -1952,11 +1953,13 @@
             }
 
             tbody.innerHTML = '';
-            filtered.forEach((r, idx) => {
+            filtered.forEach((r, idx, arr) => {
+                // 동점자 동일 순위 및 차순위 건너뛰기 (1등 2명이면 1등, 1등, 3등)
+                const rank = arr.findIndex(x => Number(x.score || 0) <= Number(r.score || 0)) + 1;
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-slate-50 transition-colors";
                 tr.innerHTML = `
-                    <td class="p-3 text-center font-bold ${idx<3 ? 'text-amber-600 font-black' : 'text-slate-400'}">${idx + 1}</td>
+                    <td class="p-3 text-center font-bold ${rank <= 3 ? 'text-amber-600 font-black' : 'text-slate-400'}">${rank}</td>
                     <td class="p-3 font-bold text-slate-700">${r.name ? r.name.split(' ').slice(0, 3).join(' ') : '-'}</td>
                     <td class="p-3 font-extrabold text-slate-800">${r.name ? r.name.split(' ').slice(3).join(' ') : '-'}</td>
                     <td class="p-3 text-right font-black text-purple-600">${(r.score || 0).toLocaleString()}점</td>
