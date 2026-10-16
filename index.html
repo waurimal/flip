@@ -878,7 +878,7 @@
         let studentProfile = { grade: '3', classNum: '1', studentNum: '1', name: '' };
         let currentUserUid = null;
 
-        let teacherSettings = { password: "0000", cardPairs: 8 };
+        let teacherSettings = { password: "4657", cardPairs: 8 };
         let pendingGameAction = null; // 'single' | 'multi-host'
         let selectedUnitId = null;
         let currentUnitName = "기본 단원";
@@ -1708,13 +1708,13 @@
             const input = document.getElementById('input-teacher-pwd').value.trim();
             if (!input) return;
 
-            let actualPwd = "1234";
+            let actualPwd = "4657";
             try {
                 const snap = await getDoc(getDocRef('settings', 'main'));
                 if (snap.exists() && snap.data().password) actualPwd = snap.data().password;
             } catch (e) {}
 
-            const isValid = window.WaurimalAuth ? window.WaurimalAuth.authenticate(input) : (input === (localStorage.getItem('waurimal_admin_pw') || actualPwd || '1234'));
+            const isValid = window.WaurimalAuth ? window.WaurimalAuth.authenticate(input) : (input === (localStorage.getItem('waurimal_admin_pw') || actualPwd || '4657'));
             if (isValid) {
                 closeTeacherAuthModal();
                 openTeacherScreen();
